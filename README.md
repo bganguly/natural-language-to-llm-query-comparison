@@ -2,6 +2,12 @@
 
 A lightweight, browser-only app to compare natural-language-to-SQL generation behavior across LLM providers (Anthropic and OpenAI), then execute generated SQL with DuckDB-WASM on a Parquet dataset.
 
+## Quick Start
+
+```bash
+npm i && npm run dev
+```
+
 ## What It Does
 
 - Loads data directly from a Parquet URL.
@@ -10,12 +16,6 @@ A lightweight, browser-only app to compare natural-language-to-SQL generation be
 - Enforces structured model output (`sql` + one-line `explanation`) for reliable parsing.
 - Runs generated SQL locally in-browser using DuckDB-WASM.
 - Provides grouped sample queries to compare model behavior quickly.
-
-## Quick Start
-
-```bash
-npm i && npm run dev
-```
 
 ## React 19 App
 
