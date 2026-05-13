@@ -222,12 +222,7 @@ select {
   background: var(--accent-bg);
 }
 
-.qwarn-icon {
-  float: right;
-  font-size: 0.8em;
-  margin-left: 6px;
-  cursor: help;
-}
+
 
 .col-tags {
   display: flex;

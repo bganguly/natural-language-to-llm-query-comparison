@@ -1,5 +1,3 @@
-import { QUERY_WARNS } from '../constants.js';
-
 const SampleQueries = ({ groups, activeQuery, onPick }) => {
   return (
     <div className="card query-lib">
@@ -14,7 +12,6 @@ const SampleQueries = ({ groups, activeQuery, onPick }) => {
               onClick={() => onPick(q)}
             >
               {q}
-              {QUERY_WARNS[q] && <span className="qwarn-icon" title={QUERY_WARNS[q]}>⚠️</span>}
             </button>
           ))}
         </div>
