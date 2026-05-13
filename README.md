@@ -1,14 +1,14 @@
 # natral-language-to-query-comparison
 
-A lightweight, browser-only playground to compare natural-language-to-SQL generation behavior across LLM providers (Anthropic and OpenAI), then execute generated SQL with DuckDB-WASM on a Parquet dataset.
+A lightweight, browser-only app to compare natural-language-to-SQL generation behavior across LLM providers (Anthropic and OpenAI), then execute generated SQL with DuckDB-WASM on a Parquet dataset.
 
 ## What It Does
 
+- Loads data directly from a Parquet URL.
+- Includes schema auto-detection from parquet metadata.
 - Translates natural language into SQL using either Anthropic or OpenAI chat models.
 - Enforces structured model output (`sql` + one-line `explanation`) for reliable parsing.
 - Runs generated SQL locally in-browser using DuckDB-WASM.
-- Loads data directly from a Parquet URL.
-- Includes schema auto-detection from parquet metadata.
 - Provides grouped sample queries to compare model behavior quickly.
 
 ## Project Structure
