@@ -268,7 +268,7 @@ const App = () => {
 
         {/* Right column: query input + SQL output + results */}
         <div>
-          <NlQueryBar value={nlQuery} onChange={setNlQuery} onTranslate={translate} />
+          <NlQueryBar value={nlQuery} onChange={(v) => { setNlQuery(v); if (v !== activeQuery) setActiveQuery(''); }} onTranslate={translate} />
           <SqlOutputCard
             statusClass={statusClass} statusText={statusText}
             sql={sql} isPlaceholder={sqlIsPlaceholder} explanation={explanation}
