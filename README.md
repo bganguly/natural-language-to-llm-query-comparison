@@ -11,14 +11,6 @@ A lightweight, browser-only app to compare natural-language-to-SQL generation be
 - Runs generated SQL locally in-browser using DuckDB-WASM.
 - Provides grouped sample queries to compare model behavior quickly.
 
-## Project Structure
-
-- `nl_to_sql.html`: complete UI + app logic (no build step).
-- `public/legacy/nl_to_sql.html`: untouched copy of the legacy app served by Vite.
-- `src/`: React 19 migration shell.
-- `index.html`: Vite entry HTML for the React app.
-- `.gitignore`: local ignores.
-
 ## React 19 App
 
 This repository now includes a componentized React 19 + Vite app.
@@ -48,15 +40,3 @@ This repository now includes a componentized React 19 + Vite app.
 - The API key is persisted in `localStorage` for convenience.
 - DuckDB runs locally in-browser; no backend is required.
 
-## Good For
-
-- Prompt iteration for NL→SQL tasks.
-- Quick side-by-side model behavior checks.
-- Schema-aware SQL generation experiments.
-
-## Future Improvements
-
-- Add provider abstraction with pluggable adapters.
-- Add saved query history and export.
-- Add repeatable evaluation set with scoring metrics.
-- Add backend proxy mode for safer key handling.
