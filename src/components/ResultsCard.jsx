@@ -25,9 +25,10 @@ const formatValue = (value) => {
   return String(value);
 }
 
+const FETCH_LIMITS = [50, 100, 500, 1000, 5000];
 const PAGE_SIZES = [10, 25, 50, 100];
 
-const ResultsCard = ({ results }) => {
+const ResultsCard = ({ results, fetchLimit, onFetchMore }) => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
@@ -106,6 +107,16 @@ const ResultsCard = ({ results }) => {
             >
               {PAGE_SIZES.map((n) => (
                 <option key={n} value={n}>{n} / page</option>
+              ))}
+            </select>
+            <select
+              className="pg-size"
+              value={fetchLimit}
+              onChange={(e) => onFetchMore(Number(e.target.value))}
+              title="Max rows fetched from DB"
+            >
+              {FETCH_LIMITS.map((n) => (
+                <option key={n} value={n}>fetch {n}</option>
               ))}
             </select>
           </div>

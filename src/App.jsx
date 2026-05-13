@@ -48,6 +48,7 @@ const App = () => {
   // ── Log state ─────────────────────────────────────────────────────────────
   const [logs, setLogs] = useState([]);
   const [logOpen, setLogOpen] = useState(false);
+  const [fetchLimit, setFetchLimit] = useState(500);
 
   const hydratedRef = useRef(false);
   const providerName = useMemo(() => providerFromModel(model), [model]);
@@ -62,11 +63,16 @@ const App = () => {
   const { duckReady, getConnection } = useDuckDb(addLog);
 
   // ── Run SQL ───────────────────────────────────────────────────────────────
-  const runQuery = async (rawSql) => {
+  const runQuery = async (rawSql, limitOverride) => {
     const sqlToRun = rawSql.trim();
     if (!sqlToRun) { alert('Enter SQL first.'); return; }
-    // Safety cap: prevent browser OOM by enforcing a max row fetch if no LIMIT present
-    const safeSQL = /\bLIMIT\b/i.test(sqlToRun) ? sqlToRun : `${sqlToRun}\nLIMIT 500`;
+    const cap = limitOverride ?? fetchLimit;
+    // Always strip any LIMIT/OFFSET the LLM injected, then apply our cap
+    const stripped = sqlToRun
+      .replace(/\bLIMIT\s+\d+(\s+OFFSET\s+\d+)?/gi, '')
+      .replace(/;\s*$/, '')
+      .trim();
+    const safeSQL = `${stripped}\nLIMIT ${cap}`;
     setResults({ visible: true, loading: true, error: '', fields: [], rows: [], elapsed: '0.0', badge: 'querying', badgeClass: 'b-spin' });
     const t0 = Date.now();
     try {
@@ -228,7 +234,11 @@ const App = () => {
             onRunEdited={() => runQuery(sql)}
             canShowActions={Boolean(sql.trim())}
           />
-          <ResultsCard results={results} />
+          <ResultsCard
+            results={results}
+            fetchLimit={fetchLimit}
+            onFetchMore={(newLimit) => { setFetchLimit(newLimit); runQuery(sql, newLimit); }}
+          />
         </div>
       </div>
 
