@@ -554,11 +554,12 @@ async function translate(){
   var model  =g('model').value;
   log('──────────────────────');
   var isOpenAI = model.startsWith('gpt-');
+  var providerName=isOpenAI?'OpenAI':'Anthropic';
   var key = activeApiKey();
   if(!nl){log('No query entered.','wn');g('nl-query').focus();return;}
   if(!key){
-    log('No API key for '+(isOpenAI?'OpenAI':'Anthropic')+'.','er');
-    alert('Enter your '+(isOpenAI?'OpenAI':'Anthropic')+' API key.');
+    log('No API key for '+providerName+'.','er');
+    alert('Enter your '+providerName+' API key.');
     g(isOpenAI?'oai-apikey':'anth-apikey').focus();
     return;
   }
@@ -578,10 +579,10 @@ async function translate(){
   g('status-badge').innerHTML='<span class="spin"></span> translating';
   g('run-btn').disabled=true;
   g('sql-out').className='';
-  g('sql-out').innerHTML='<div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot-lbl">asking Claude…</span></div>';
+  g('sql-out').innerHTML='<div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot-lbl">asking '+providerName+'…</span></div>';
   g('copy-btn').style.display='none';
   g('expl').style.display='none';
-  log('Provider: '+(isOpenAI?'OpenAI':'Anthropic')+' | Model: '+model);
+  log('Provider: '+providerName+' | Model: '+model);
   try{
   var resText;
   if(isOpenAI){
