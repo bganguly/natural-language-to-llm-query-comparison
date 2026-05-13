@@ -21,11 +21,9 @@ import {
 } from './constants.js';
 import { useDuckDb } from './hooks/useDuckDb.js';
 
-function providerFromModel(model) {
-  return model.startsWith('gpt-') ? 'OpenAI' : 'Anthropic';
-}
+const providerFromModel = (model) => (model.startsWith('gpt-') ? 'OpenAI' : 'Anthropic');
 
-export default function App() {
+const App = () => {
   // ── Config state ──────────────────────────────────────────────────────────
   const [bucket, setBucket] = useState(DEFAULT_BUCKET);
   const [tableName, setTableName] = useState('h1b');
@@ -55,16 +53,16 @@ export default function App() {
   const providerName = useMemo(() => providerFromModel(model), [model]);
   const activeApiKey = providerName === 'OpenAI' ? openAiKey.trim() : anthropicKey.trim();
 
-  function addLog(message, level = 'n') {
+  const addLog = (message, level = 'n') => {
     setLogs((prev) => [...prev, { id: `${Date.now()}-${prev.length}`, ts: nowClock(), message, level }]);
     setLogOpen(true);
-  }
+  };
 
   // ── DuckDB ────────────────────────────────────────────────────────────────
   const { duckReady, getConnection } = useDuckDb(addLog);
 
   // ── Run SQL ───────────────────────────────────────────────────────────────
-  async function runQuery(rawSql) {
+  const runQuery = async (rawSql) => {
     const sqlToRun = rawSql.trim();
     if (!sqlToRun) { alert('Enter SQL first.'); return; }
     setResults({ visible: true, loading: true, error: '', fields: [], rows: [], elapsed: '0.0', badge: 'querying', badgeClass: 'b-spin' });
@@ -81,10 +79,10 @@ export default function App() {
       addLog(`Query error: ${error.message}`, 'er');
       setResults({ visible: true, loading: false, error: error.message, fields: [], rows: [], elapsed: '0.0', badge: 'error', badgeClass: 'b-err' });
     }
-  }
+  };
 
   // ── Schema sniff ──────────────────────────────────────────────────────────
-  async function sniffSchema() {
+  const sniffSchema = async () => {
     if (!bucket.trim()) { alert('Enter a parquet endpoint first.'); return; }
     try {
       addLog('Sniffing schema ...');
@@ -100,10 +98,10 @@ export default function App() {
     } catch (error) {
       addLog(`Sniff error: ${error.message}`, 'er');
     }
-  }
+  };
 
   // ── Translate (NL → SQL) ──────────────────────────────────────────────────
-  async function translate() {
+  const translate = async () => {
     if (!nlQuery.trim()) { addLog('No query entered.', 'wn'); return; }
     if (!activeApiKey) {
       addLog(`No API key for ${providerName}.`, 'er');
@@ -143,7 +141,7 @@ export default function App() {
       setStatusText('error'); setStatusClass('b-err');
       addLog(`Exception: ${error.message}`, 'er');
     }
-  }
+  };
 
   // ── Persistence ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -235,4 +233,6 @@ export default function App() {
       <LogPanel logs={logs} open={logOpen} onToggle={() => setLogOpen((s) => !s)} />
     </main>
   );
-}
+};
+
+export default App;
