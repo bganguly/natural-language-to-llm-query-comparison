@@ -159,6 +159,7 @@ const App = () => {
 
     setStatusText('translating'); setStatusClass('b-spin');
     setSql(`asking ${providerName}...`); setSqlIsPlaceholder(true); setExplanation('');
+    setResults({ visible: false, loading: false, error: '', fields: [], rows: [], elapsed: '0.0', badge: '', badgeClass: 'b-idle' });
 
     try {
       const { sql: parsedSql, explanation: parsedExplanation } = await callProvider({
