@@ -34,7 +34,7 @@ export const QUERY_GROUPS = [
       'average wage by job title',
       'top 10 job titles with highest average wage',
       'average wage by job_title for fiscal_year 2025',
-      'top 10 employers by average wage where wage is not null',
+      'show top 10 employers by average wage, skip empty wages',
       'wage gap between certified and denied applications by job title',
       'average wage by work_location and fiscal_year',
       'wage distribution by country and fiscal_quarter',
