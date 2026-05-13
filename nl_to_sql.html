@@ -125,12 +125,19 @@ tbody td.num{font-family:var(--mono);text-align:right;color:var(--muted)}
     <div class="card">
       <p class="lbl">API config</p>
       <div class="field">
-        <label id="key-label">API key</label>
+        <label>Anthropic API key</label>
         <div class="irow">
-          <input type="password" id="apikey" placeholder="sk-ant-... or sk-..." autocomplete="off" />
-          <button class="btn-sm" id="key-toggle">show</button>
+          <input type="password" id="anth-apikey" placeholder="sk-ant-..." autocomplete="off" />
+          <button class="btn-sm" id="anth-key-toggle">show</button>
         </div>
-        <p class="hint" id="key-hint">Key goes directly to the provider — never stored remotely.</p>
+      </div>
+      <div class="field">
+        <label>OpenAI API key</label>
+        <div class="irow">
+          <input type="password" id="oai-apikey" placeholder="sk-..." autocomplete="off" />
+          <button class="btn-sm" id="oai-key-toggle">show</button>
+        </div>
+        <p class="hint" id="key-hint">Active provider key is selected automatically from model choice.</p>
       </div>
       <div class="field">
         <label>Model</label>
@@ -312,7 +319,7 @@ g('log-hd').onclick=function(){
 function persist(){
   try{localStorage.setItem(SK,JSON.stringify({
     bucket:g('bucket').value,tablename:g('tablename').value,
-    apikey:g('apikey').value,dialect:g('dialect').value,
+    anthropicKey:g('anth-apikey').value,openaiKey:g('oai-apikey').value,dialect:g('dialect').value,
     model:g('model').value,nlquery:g('nl-query').value,cols:cols
   }));}catch(e){}
 }
@@ -323,12 +330,27 @@ function hydrate(){
     if(!s) return;
     if(s.bucket)    g('bucket').value    =s.bucket;
     if(s.tablename) g('tablename').value =s.tablename;
-    if(s.apikey)    g('apikey').value    =s.apikey;
+    if(s.anthropicKey) g('anth-apikey').value = s.anthropicKey;
+    if(s.openaiKey)    g('oai-apikey').value  = s.openaiKey;
+    if(s.apikey&&!s.anthropicKey&&!s.openaiKey){
+      if((s.model||'').startsWith('gpt-')) g('oai-apikey').value=s.apikey;
+      else g('anth-apikey').value=s.apikey;
+    }
     if(s.dialect)   g('dialect').value   =s.dialect;
     if(s.model)     g('model').value     =s.model;
     if(s.nlquery)   g('nl-query').value  =s.nlquery;
     if(s.cols&&s.cols.length) cols=s.cols;
   }catch(e){}
+}
+function activeProviderName(){
+  return g('model').value.startsWith('gpt-')?'OpenAI':'Anthropic';
+}
+function activeApiKey(){
+  return g('model').value.startsWith('gpt-')?g('oai-apikey').value.trim():g('anth-apikey').value.trim();
+}
+function refreshKeyHint(){
+  var p=activeProviderName();
+  g('key-hint').textContent='Active provider: '+p+' (switches automatically by model). Keys stay local in this browser.';
 }
 function randomAlias(){
   var a=ADJS[Math.floor(Math.random()*ADJS.length)];
@@ -525,7 +547,6 @@ async function runQuery(sql){
 
 // ── translate ─────────────────────────────────────────────────────────────
 async function translate(){
-  var key    =g('apikey').value.trim();
   var src    =g('bucket').value.trim();
   var alias  =g('tablename').value.trim()||'h1b';
   var nl     =g('nl-query').value.trim();
@@ -533,8 +554,14 @@ async function translate(){
   var model  =g('model').value;
   log('──────────────────────');
   var isOpenAI = model.startsWith('gpt-');
+  var key = activeApiKey();
   if(!nl){log('No query entered.','wn');g('nl-query').focus();return;}
-  if(!key){log('No API key.','er');alert('Enter your '+(isOpenAI?'OpenAI':'Anthropic')+' API key.');return;}
+  if(!key){
+    log('No API key for '+(isOpenAI?'OpenAI':'Anthropic')+'.','er');
+    alert('Enter your '+(isOpenAI?'OpenAI':'Anthropic')+' API key.');
+    g(isOpenAI?'oai-apikey':'anth-apikey').focus();
+    return;
+  }
   log('Query: "'+nl+'"');
   log('Model: '+model+' | Dialect: '+dialect);
   var schema=cols.map(function(c){return '  '+c.name+' ('+c.type+')';}).join('\n');
@@ -638,9 +665,13 @@ g('alias-btn').onclick=randomAlias;
 g('sniff-btn').onclick=sniffSchema;
 g('add-col-btn').onclick=addCol;
 g('new-col-name').onkeydown=function(e){if(e.key==='Enter')addCol();};
-g('key-toggle').onclick=function(){
-  var f=g('apikey');f.type=f.type==='password'?'text':'password';
-  g('key-toggle').textContent=f.type==='password'?'show':'hide';
+g('anth-key-toggle').onclick=function(){
+  var f=g('anth-apikey');f.type=f.type==='password'?'text':'password';
+  g('anth-key-toggle').textContent=f.type==='password'?'show':'hide';
+};
+g('oai-key-toggle').onclick=function(){
+  var f=g('oai-apikey');f.type=f.type==='password'?'text':'password';
+  g('oai-key-toggle').textContent=f.type==='password'?'show':'hide';
 };
 g('copy-btn').onclick=function(){
   navigator.clipboard.writeText(g('sql-out').textContent).then(function(){
@@ -648,18 +679,15 @@ g('copy-btn').onclick=function(){
     setTimeout(function(){g('copy-btn').textContent='⎘ copy SQL';},1500);
   });
 };
-['bucket','tablename','apikey','nl-query'].forEach(function(id){g(id).oninput=debSave;});
+['bucket','tablename','anth-apikey','oai-apikey','nl-query'].forEach(function(id){g(id).oninput=debSave;});
 g('dialect').onchange=persist;
 g('model').onchange=function(){
   persist();
-  var m=g('model').value;
-  var isOAI=m.startsWith('gpt-');
-  g('key-label').textContent=isOAI?'OpenAI API key':'Anthropic API key';
-  g('apikey').placeholder=isOAI?'sk-...':'sk-ant-...';
-  g('key-hint').textContent=isOAI?'Goes directly to api.openai.com only.':'Goes directly to api.anthropic.com only.';
+  refreshKeyHint();
 };
 
 hydrate();
+refreshKeyHint();
 renderCols();
 renderChips();
 initDuckDB().catch(function(){});
