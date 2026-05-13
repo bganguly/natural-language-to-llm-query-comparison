@@ -164,9 +164,9 @@ const App = () => {
       if (!parsedSql) throw new Error('Model returned empty SQL.');
       const fixedSql = fixTableRef(parsedSql, tableName.trim() || 'h1b', bucket.trim());
       if (fixedSql !== parsedSql) addLog(`Rewrote bare table alias "${tableName.trim() || 'h1b'}" → read_parquet(...)`, 'wn');
-      // Append data-quality notes for columns that have known caveats
+      // Append data-quality notes only when the NL query is explicitly about that column
       const colNotes = cols
-        .filter((c) => c.note && new RegExp(`\\b${c.name}\\b`, 'i').test(fixedSql))
+        .filter((c) => c.note && new RegExp(`\\b${c.name}s?\\b`, 'i').test(nlQuery.trim()))
         .map((c) => c.note);
       const queryWarn = QUERY_WARNS[nlQuery.trim()];
       const allNotes = [...colNotes, ...(queryWarn ? [queryWarn] : [])];
