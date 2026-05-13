@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const WAGE_COL_RE = /wage|salary|pay|compensation/i;
+const YEAR_COL_RE = /year|quarter/i;
 
 const formatValue = (value, col = '') => {
   if (value === null || value === undefined) {
@@ -13,7 +14,9 @@ const formatValue = (value, col = '') => {
 
   if (typeof value === 'number') {
     const isWageCol = WAGE_COL_RE.test(col);
+    const isYearCol = YEAR_COL_RE.test(col);
     if (Number.isInteger(value)) {
+      if (isYearCol) return String(value);
       return value.toLocaleString('en-US', {
         minimumFractionDigits: isWageCol ? 2 : 0,
         maximumFractionDigits: isWageCol ? 2 : 0,
