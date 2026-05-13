@@ -23,6 +23,18 @@ import { useDuckDb } from './hooks/useDuckDb.js';
 
 const providerFromModel = (model) => (model.startsWith('gpt-') ? 'OpenAI' : 'Anthropic');
 
+// Replace a bare table-name reference with the full read_parquet(...) expression.
+// Handles: FROM alias, JOIN alias, FROM alias AS x, subquery aliases.
+const fixTableRef = (sqlStr, alias, bucketUrl) => {
+  if (!alias) return sqlStr;
+  // Already uses read_parquet — nothing to do
+  if (/read_parquet/i.test(sqlStr)) return sqlStr;
+  const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Match alias when preceded by FROM or JOIN (with optional whitespace/newline)
+  const re = new RegExp(`(?<=(\\bFROM|\\bJOIN)\\s+)${escaped}\\b`, 'gi');
+  return sqlStr.replace(re, `read_parquet('${bucketUrl}')`);
+};
+
 const App = () => {
   // ── Config state ──────────────────────────────────────────────────────────
   const [bucket, setBucket] = useState(DEFAULT_BUCKET);
@@ -140,10 +152,12 @@ const App = () => {
         model, apiKey: activeApiKey, systemPrompt, nlQuery: nlQuery.trim(), providerName,
       });
       if (!parsedSql) throw new Error('Model returned empty SQL.');
-      setSql(parsedSql); setSqlIsPlaceholder(false); setExplanation(parsedExplanation);
+      const fixedSql = fixTableRef(parsedSql, tableName.trim() || 'h1b', bucket.trim());
+      if (fixedSql !== parsedSql) addLog(`Rewrote bare table alias "${tableName.trim() || 'h1b'}" → read_parquet(...)`, 'wn');
+      setSql(fixedSql); setSqlIsPlaceholder(false); setExplanation(parsedExplanation);
       setStatusText('SQL ready'); setStatusClass('b-ok');
-      addLog(`SQL ready (${parsedSql.length} chars)`, 'ok');
-      await runQuery(parsedSql);
+      addLog(`SQL ready (${fixedSql.length} chars)`, 'ok');
+      await runQuery(fixedSql);
     } catch (error) {
       setSql(`Error: ${error.message}`); setSqlIsPlaceholder(true);
       setStatusText('error'); setStatusClass('b-err');
