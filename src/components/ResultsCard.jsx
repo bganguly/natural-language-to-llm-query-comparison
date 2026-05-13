@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 
-const formatValue = (value) => {
+const WAGE_COL_RE = /wage|salary|pay|compensation/i;
+
+const formatValue = (value, col = '') => {
   if (value === null || value === undefined) {
     return '—';
   }
@@ -10,10 +12,11 @@ const formatValue = (value) => {
   }
 
   if (typeof value === 'number') {
+    const isWageCol = WAGE_COL_RE.test(col);
     if (Number.isInteger(value)) {
       return value.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+        minimumFractionDigits: isWageCol ? 2 : 0,
+        maximumFractionDigits: isWageCol ? 2 : 0,
       });
     }
     return value.toLocaleString('en-US', {
@@ -74,7 +77,7 @@ const ResultsCard = ({ results, fetchLimit, onFetchMore }) => {
                   <tr key={`${start + index}-${results.fields[0] ?? 'row'}`}>
                     {results.fields.map((field) => (
                       <td key={`${start + index}-${field}`} className={typeof row[field] === 'number' || typeof row[field] === 'bigint' ? 'num' : ''}>
-                        {formatValue(row[field])}
+                        {formatValue(row[field], field)}
                       </td>
                     ))}
                   </tr>
