@@ -15,6 +15,7 @@ import {
   LEGACY_STORAGE_KEY,
   MODELS,
   QUERY_GROUPS,
+  QUERY_WARNS,
   STORAGE_KEY,
   nowClock,
   parquetTypeToSql,
@@ -167,8 +168,10 @@ const App = () => {
       const colNotes = cols
         .filter((c) => c.note && new RegExp(`\\b${c.name}\\b`, 'i').test(fixedSql))
         .map((c) => c.note);
-      const finalExplanation = colNotes.length
-        ? `${parsedExplanation} ⚠️ Note: ${colNotes.join(' ')}`
+      const queryWarn = QUERY_WARNS[nlQuery.trim()];
+      const allNotes = [...colNotes, ...(queryWarn ? [queryWarn] : [])];
+      const finalExplanation = allNotes.length
+        ? `${parsedExplanation} ⚠️ Note: ${allNotes.join(' ')}`
         : parsedExplanation;
       setSql(fixedSql); setSqlIsPlaceholder(false); setExplanation(finalExplanation);
       setStatusText('SQL ready'); setStatusClass('b-ok');

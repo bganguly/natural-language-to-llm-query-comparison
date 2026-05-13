@@ -8,17 +8,14 @@ const SampleQueries = ({ groups, activeQuery, onPick }) => {
         <div key={group.label} className="qlib-group">
           <p className="group-label">{group.label}</p>
           {group.queries.map((q) => (
-            <div key={q} className="qlib-wrap">
-              <button
-                className={`qlib-item ${activeQuery === q ? 'active' : ''}`}
-                onClick={() => onPick(q)}
-              >
-                {q}
-              </button>
-              {QUERY_WARNS[q] && (
-                <p className="qlib-note">⚠ {QUERY_WARNS[q]}</p>
-              )}
-            </div>
+            <button
+              key={q}
+              className={`qlib-item ${activeQuery === q ? 'active' : ''}`}
+              onClick={() => onPick(q)}
+            >
+              {q}
+              {QUERY_WARNS[q] && <span className="qwarn-icon" title={QUERY_WARNS[q]}>⚠️</span>}
+            </button>
           ))}
         </div>
       ))}

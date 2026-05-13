@@ -222,14 +222,11 @@ select {
   background: var(--accent-bg);
 }
 
-.qlib-note {
-  margin: -2px 0 4px 0;
-  padding: 4px 8px;
-  font-size: 0.72em;
-  color: var(--muted);
-  background: var(--surface);
-  border-left: 2px solid var(--warn, #c8872a);
-  border-radius: 0 4px 4px 0;
+.qwarn-icon {
+  float: right;
+  font-size: 0.8em;
+  margin-left: 6px;
+  cursor: help;
 }
 
 .col-tags {
