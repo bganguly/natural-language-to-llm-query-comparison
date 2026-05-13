@@ -19,13 +19,13 @@ A lightweight, browser-only playground to compare natural-language-to-SQL genera
 - `index.html`: Vite entry HTML for the React app.
 - `.gitignore`: local ignores.
 
-## React 19 Migration Shell
+## React 19 App
 
-This repository now includes a standard React 19 + Vite app for incremental migration.
+This repository now includes a componentized React 19 + Vite app.
 
-- Home route (`/`) loads a React shell.
-- Legacy route (`/legacy/nl_to_sql.html`) serves the preserved HTML app.
-- The shell embeds the legacy app via iframe so behavior remains unchanged while migration proceeds.
+- Home route (`/`) runs the React implementation.
+- Legacy route (`/legacy/nl_to_sql.html`) serves the preserved original HTML app.
+- The React header includes an "Open Original HTML" button to launch the untouched legacy page in a new tab at any time.
 
 ### Run React App
 
