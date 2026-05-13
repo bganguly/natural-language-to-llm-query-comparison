@@ -11,6 +11,12 @@ A lightweight, browser-only app to compare natural-language-to-SQL generation be
 - Runs generated SQL locally in-browser using DuckDB-WASM.
 - Provides grouped sample queries to compare model behavior quickly.
 
+## Quick Start
+
+```bash
+npm i && npm run dev
+```
+
 ## React 19 App
 
 This repository now includes a componentized React 19 + Vite app.
