@@ -65,11 +65,13 @@ const App = () => {
   const runQuery = async (rawSql) => {
     const sqlToRun = rawSql.trim();
     if (!sqlToRun) { alert('Enter SQL first.'); return; }
+    // Safety cap: prevent browser OOM by enforcing a max row fetch if no LIMIT present
+    const safeSQL = /\bLIMIT\b/i.test(sqlToRun) ? sqlToRun : `${sqlToRun}\nLIMIT 500`;
     setResults({ visible: true, loading: true, error: '', fields: [], rows: [], elapsed: '0.0', badge: 'querying', badgeClass: 'b-spin' });
     const t0 = Date.now();
     try {
       const conn = await getConnection();
-      const result = await conn.query(sqlToRun);
+      const result = await conn.query(safeSQL);
       const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
       const fields = result.schema.fields.map((f) => f.name);
       const rows = result.toArray().map((r) => (typeof r.toJSON === 'function' ? r.toJSON() : r));

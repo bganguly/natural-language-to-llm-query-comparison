@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 const formatValue = (value) => {
   if (value === null || value === undefined) {
     return '—';
@@ -23,10 +25,21 @@ const formatValue = (value) => {
   return String(value);
 }
 
+const PAGE_SIZES = [10, 25, 50, 100];
+
 const ResultsCard = ({ results }) => {
-  if (!results.visible) {
-    return null;
-  }
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => { setPage(0); }, [results.rows]);
+
+  if (!results.visible) return null;
+
+  const total = results.rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const currPage = Math.min(page, totalPages - 1);
+  const start = currPage * pageSize;
+  const pageRows = results.rows.slice(start, start + pageSize);
 
   return (
     <div className="results-card">
@@ -56,10 +69,10 @@ const ResultsCard = ({ results }) => {
                 </tr>
               </thead>
               <tbody>
-                {results.rows.map((row, index) => (
-                  <tr key={`${index}-${results.fields[0] ?? 'row'}`}>
+                {pageRows.map((row, index) => (
+                  <tr key={`${start + index}-${results.fields[0] ?? 'row'}`}>
                     {results.fields.map((field) => (
-                      <td key={`${index}-${field}`} className={typeof row[field] === 'number' || typeof row[field] === 'bigint' ? 'num' : ''}>
+                      <td key={`${start + index}-${field}`} className={typeof row[field] === 'number' || typeof row[field] === 'bigint' ? 'num' : ''}>
                         {formatValue(row[field])}
                       </td>
                     ))}
@@ -68,7 +81,34 @@ const ResultsCard = ({ results }) => {
               </tbody>
             </table>
           </div>
-          <div className="row-count">Showing {results.rows.length} rows · {results.elapsed}s</div>
+          <div className="pagination">
+            <button
+              className="btn-sm"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={currPage === 0}
+            >
+              ‹ prev
+            </button>
+            <span className="pg-info">
+              page {currPage + 1} / {totalPages} &nbsp;·&nbsp; {total} rows · {results.elapsed}s
+            </span>
+            <button
+              className="btn-sm"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={currPage >= totalPages - 1}
+            >
+              next ›
+            </button>
+            <select
+              className="pg-size"
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
+            >
+              {PAGE_SIZES.map((n) => (
+                <option key={n} value={n}>{n} / page</option>
+              ))}
+            </select>
+          </div>
         </>
       )}
     </div>
