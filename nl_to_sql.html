@@ -58,9 +58,12 @@ input:focus,select:focus{border-color:var(--accent);background:#fff}
 .b-spin{background:var(--accent-bg);color:var(--accent-text)}
 .b-ok{background:var(--green-bg);color:var(--green)}
 .b-err{background:var(--red-bg);color:var(--red)}
+.out-actions{display:flex;align-items:center;gap:6px}
 .btn-copy{font-size:12px;padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--muted)}
 .btn-copy:hover{background:var(--bg)}
-#sql-out{padding:14px 16px;font-family:var(--mono);font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-all;min-height:60px;color:var(--text)}
+#run-sql-btn{font-size:12px;padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--muted)}
+#run-sql-btn:hover{background:var(--bg)}
+#sql-out{padding:14px 16px;font-family:var(--mono);font-size:13px;line-height:1.65;min-height:88px;color:var(--text);width:100%;border:none;resize:vertical;outline:none;background:transparent;display:block}
 #sql-out.ph{color:var(--hint);font-family:inherit;font-style:italic}
 .expl{border-top:1px solid var(--border);padding:10px 16px;font-size:13px;color:var(--muted);line-height:1.6;display:none}
 .expl strong{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--hint);display:block;margin-bottom:3px;font-weight:700}
@@ -202,9 +205,12 @@ tbody td.num{font-family:var(--mono);text-align:right;color:var(--muted)}
     <div class="out-card">
       <div class="out-head">
         <span class="badge b-idle" id="status-badge">waiting</span>
-        <button class="btn-copy" id="copy-btn" style="display:none">⎘ copy SQL</button>
+        <div class="out-actions">
+          <button id="run-sql-btn" style="display:none">▶ run edited SQL</button>
+          <button class="btn-copy" id="copy-btn" style="display:none">⎘ copy SQL</button>
+        </div>
       </div>
-      <div id="sql-out" class="ph">Translated SQL will appear here.</div>
+      <textarea id="sql-out" class="ph" spellcheck="false">Translated SQL will appear here.</textarea>
       <div class="expl" id="expl"><strong>Why this query</strong><span id="expl-text"></span></div>
     </div>
 
@@ -351,6 +357,12 @@ function activeApiKey(){
 function refreshKeyHint(){
   var p=activeProviderName();
   g('key-hint').textContent='Active provider: '+p+' (switches automatically by model). Keys stay local in this browser.';
+}
+function setSqlOut(text,isPlaceholder){
+  var out=g('sql-out');
+  out.value=text||'';
+  if(isPlaceholder) out.classList.add('ph');
+  else out.classList.remove('ph');
 }
 function randomAlias(){
   var a=ADJS[Math.floor(Math.random()*ADJS.length)];
@@ -545,6 +557,16 @@ async function runQuery(sql){
   }
 }
 
+async function runEditedSql(){
+  var sql=g('sql-out').value.trim();
+  if(!sql){alert('Enter or generate SQL first.');return;}
+  g('status-badge').innerHTML='running edited SQL';
+  g('status-badge').className='badge b-spin';
+  await runQuery(sql);
+  g('status-badge').innerHTML='SQL ready';
+  g('status-badge').className='badge b-ok';
+}
+
 // ── translate ─────────────────────────────────────────────────────────────
 async function translate(){
   var src    =g('bucket').value.trim();
@@ -578,9 +600,9 @@ async function translate(){
   g('status-badge').className='badge b-spin';
   g('status-badge').innerHTML='<span class="spin"></span> translating';
   g('run-btn').disabled=true;
-  g('sql-out').className='';
-  g('sql-out').innerHTML='<div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot-lbl">asking '+providerName+'…</span></div>';
+  setSqlOut('asking '+providerName+'…',true);
   g('copy-btn').style.display='none';
+  g('run-sql-btn').style.display='none';
   g('expl').style.display='none';
   log('Provider: '+providerName+' | Model: '+model);
   try{
@@ -613,10 +635,10 @@ async function translate(){
     var parsed;
     try{parsed=JSON.parse(raw);log('JSON OK ✓','ok');}
     catch(pe){log('JSON parse failed: '+pe.message,'er');throw new Error('Bad JSON from model.');}
-    g('sql-out').className='';
-    g('sql-out').textContent=parsed.sql;
+    setSqlOut(parsed.sql,false);
     g('status-badge').innerHTML='SQL ready';g('status-badge').className='badge b-ok';
     g('copy-btn').style.display='inline-flex';
+    g('run-sql-btn').style.display='inline-flex';
     log('SQL ready ('+parsed.sql.length+' chars)','ok');
     if(parsed.explanation){g('expl-text').textContent=parsed.explanation;g('expl').style.display='block';}
     await runQuery(parsed.sql);
@@ -642,17 +664,18 @@ async function translate(){
     var parsed;
     try{parsed=JSON.parse(raw);log('JSON OK ✓','ok');}
     catch(pe){log('JSON parse failed: '+pe.message,'er');throw new Error('Bad JSON from model.');}
-    g('sql-out').className='';
-    g('sql-out').textContent=parsed.sql;
+    setSqlOut(parsed.sql,false);
     g('status-badge').innerHTML='SQL ready';g('status-badge').className='badge b-ok';
     g('copy-btn').style.display='inline-flex';
+    g('run-sql-btn').style.display='inline-flex';
     log('SQL ready ('+parsed.sql.length+' chars)','ok');
     if(parsed.explanation){g('expl-text').textContent=parsed.explanation;g('expl').style.display='block';}
     await runQuery(parsed.sql);
   }
   }catch(e){
-    g('sql-out').className='ph';g('sql-out').textContent='Error: '+e.message;
+    setSqlOut('Error: '+e.message,true);
     g('status-badge').innerHTML='error';g('status-badge').className='badge b-err';
+    g('run-sql-btn').style.display='inline-flex';
     log('Exception: '+e.message,'er');
   }finally{
     g('run-btn').disabled=false;
@@ -675,10 +698,14 @@ g('oai-key-toggle').onclick=function(){
   g('oai-key-toggle').textContent=f.type==='password'?'show':'hide';
 };
 g('copy-btn').onclick=function(){
-  navigator.clipboard.writeText(g('sql-out').textContent).then(function(){
+  navigator.clipboard.writeText(g('sql-out').value).then(function(){
     g('copy-btn').textContent='✓ copied!';
     setTimeout(function(){g('copy-btn').textContent='⎘ copy SQL';},1500);
   });
+};
+g('run-sql-btn').onclick=runEditedSql;
+g('sql-out').oninput=function(){
+  if(g('sql-out').value.trim()) g('sql-out').classList.remove('ph');
 };
 ['bucket','tablename','anth-apikey','oai-apikey','nl-query'].forEach(function(id){g(id).oninput=debSave;});
 g('dialect').onchange=persist;
