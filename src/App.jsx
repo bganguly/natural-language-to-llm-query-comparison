@@ -23,23 +23,6 @@ import { useDuckDb } from './hooks/useDuckDb.js';
 
 const providerFromModel = (model) => (model.startsWith('gpt-') ? 'OpenAI' : 'Anthropic');
 
-// Enforce country IS NOT NULL filter when country column appears in the SQL,
-// regardless of whether the LLM included it.
-const ensureCountryFilter = (sqlStr) => {
-  if (!/\bcountry\b/i.test(sqlStr)) return sqlStr; // country not referenced
-  if (/\bcountry\s+IS\s+NOT\s+NULL\b/i.test(sqlStr)) return sqlStr; // already present
-  // Inject into existing WHERE clause (prepend so it's always evaluated)
-  if (/\bWHERE\b/i.test(sqlStr)) {
-    return sqlStr.replace(/\bWHERE\b/i, 'WHERE country IS NOT NULL AND ');
-  }
-  // No WHERE — insert before GROUP BY / ORDER BY / HAVING / LIMIT
-  const keyword = /\b(GROUP\s+BY|ORDER\s+BY|HAVING|LIMIT)\b/i;
-  if (keyword.test(sqlStr)) {
-    return sqlStr.replace(keyword, 'WHERE country IS NOT NULL\n$1');
-  }
-  return `${sqlStr}\nWHERE country IS NOT NULL`;
-};
-
 const App = () => {
   // ── Config state ──────────────────────────────────────────────────────────
   const [bucket, setBucket] = useState(DEFAULT_BUCKET);
@@ -147,8 +130,7 @@ const App = () => {
       `Schema:\n${schema}\n` +
       'Default TOP N=10. ORDER BY for ranking. COUNT(*) for counts. AVG(wage) for averages.\n' +
       'fiscal_year+fiscal_quarter together for fiscal queries. year column for calendar year.\n' +
-      'MANDATORY: whenever the country column appears anywhere in the query (SELECT, GROUP BY, ORDER BY, or WHERE), ' +
-      'you MUST include "country IS NOT NULL" in the WHERE clause. No exceptions.';
+      'Only add WHERE filters that are explicitly requested in the natural language query.';
 
     setStatusText('translating'); setStatusClass('b-spin');
     setSql(`asking ${providerName}...`); setSqlIsPlaceholder(true); setExplanation('');
@@ -158,12 +140,10 @@ const App = () => {
         model, apiKey: activeApiKey, systemPrompt, nlQuery: nlQuery.trim(), providerName,
       });
       if (!parsedSql) throw new Error('Model returned empty SQL.');
-      const enforcedSql = ensureCountryFilter(parsedSql);
-      if (enforcedSql !== parsedSql) addLog('Injected country IS NOT NULL filter', 'wn');
-      setSql(enforcedSql); setSqlIsPlaceholder(false); setExplanation(parsedExplanation);
+      setSql(parsedSql); setSqlIsPlaceholder(false); setExplanation(parsedExplanation);
       setStatusText('SQL ready'); setStatusClass('b-ok');
-      addLog(`SQL ready (${enforcedSql.length} chars)`, 'ok');
-      await runQuery(enforcedSql);
+      addLog(`SQL ready (${parsedSql.length} chars)`, 'ok');
+      await runQuery(parsedSql);
     } catch (error) {
       setSql(`Error: ${error.message}`); setSqlIsPlaceholder(true);
       setStatusText('error'); setStatusClass('b-err');
