@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as duckdb from '@duckdb/duckdb-wasm';
 
-export const useDuckDb = (addLog) => {
-  const [duckReady, setDuckReady] = useState('loading');
-  const connRef = useRef(null);
-  const initPromiseRef = useRef(null);
+type LogLevel = 'ok' | 'er' | 'info';
+type AddLog = (message: string, level?: LogLevel) => void;
+
+interface UseDuckDbResult {
+  duckReady: 'loading' | 'ready' | 'error';
+  getConnection: () => Promise<duckdb.AsyncDuckDBConnection>;
+}
+
+export const useDuckDb = (addLog: AddLog): UseDuckDbResult => {
+  const [duckReady, setDuckReady] = useState<'loading' | 'ready' | 'error'>('loading');
+  const connRef = useRef<duckdb.AsyncDuckDBConnection | null>(null);
+  const initPromiseRef = useRef<Promise<duckdb.AsyncDuckDBConnection> | null>(null);
   // keep a ref so the async IIFE always calls the latest addLog
   const addLogRef = useRef(addLog);
   addLogRef.current = addLog;
@@ -34,7 +42,7 @@ export const useDuckDb = (addLog) => {
       } catch (error) {
         setDuckReady('error');
         initPromiseRef.current = null;
-        addLogRef.current(`DuckDB init failed: ${error.message}`, 'er');
+        addLogRef.current(`DuckDB init failed: ${(error as Error).message}`, 'er');
         throw error;
       }
     })();

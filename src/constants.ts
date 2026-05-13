@@ -4,7 +4,7 @@ export const LEGACY_STORAGE_KEY = 'nlsql_v5';
 export const ADJS = ['amber', 'brisk', 'coral', 'dusty', 'ember', 'frost', 'gilded', 'hazy', 'ivory', 'jade'];
 export const NOUNS = ['table', 'frame', 'batch', 'slice', 'shard', 'view', 'store'];
 
-export const MODELS = {
+export const MODELS: { anthropic: string[]; openai: string[] } = {
   anthropic: [
     'claude-sonnet-4-5',
     'claude-opus-4-5',
@@ -13,9 +13,14 @@ export const MODELS = {
   openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
 };
 
-export const DIALECTS = ['DuckDB', 'Presto/Athena', 'Spark SQL', 'BigQuery'];
+export const DIALECTS: string[] = ['DuckDB', 'Presto/Athena', 'Spark SQL', 'BigQuery'];
 
-export const QUERY_GROUPS = [
+export interface QueryGroup {
+  label: string;
+  queries: string[];
+}
+
+export const QUERY_GROUPS: QueryGroup[] = [
   {
     label: 'Employers',
     queries: [
@@ -73,7 +78,13 @@ export const QUERY_GROUPS = [
   },
 ];
 
-export const DEFAULT_COLS = [
+export interface ColDef {
+  name: string;
+  type: string;
+  note?: string;
+}
+
+export const DEFAULT_COLS: ColDef[] = [
   { name: 'employer', type: 'TEXT' },
   { name: 'job_title', type: 'TEXT' },
   { name: 'country', type: 'TEXT', note: 'country is mostly null in this dataset — queries filtering by country may return 0 rows regardless of model' },
@@ -85,17 +96,17 @@ export const DEFAULT_COLS = [
   { name: 'fiscal_quarter', type: 'INTEGER' },
 ];
 
-export const QUERY_WARNS = {
+export const QUERY_WARNS: Record<string, string> = {
   'wage gap between certified and denied applications by job title':
     'Results vary by provider: models that use a JOIN return fewer rows than models that use CASE WHEN aggregation',
 };
 
-export const SQL_TYPES = ['TEXT', 'INTEGER', 'DOUBLE', 'DATE', 'BOOLEAN', 'TIMESTAMP'];
+export const SQL_TYPES: string[] = ['TEXT', 'INTEGER', 'DOUBLE', 'DATE', 'BOOLEAN', 'TIMESTAMP'];
 
 export const DEFAULT_BUCKET =
   'https://h1b-nlq-parquet-577479071532-20260511.s3.us-east-1.amazonaws.com/data/parquet/dol_lca_h1b_fy2020_q1_to_fy2026_q1.parquet?v=full_multi_fiscal_noempty_countrynull_20260512';
 
-export const parquetTypeToSql = (rawType) => {
+export const parquetTypeToSql = (rawType: string): string => {
   const raw = String(rawType || '').toUpperCase();
   if (raw === 'INT32' || raw === 'INT64' || raw === 'INT96') return 'INTEGER';
   if (raw === 'FLOAT' || raw === 'DOUBLE') return 'DOUBLE';
@@ -103,6 +114,6 @@ export const parquetTypeToSql = (rawType) => {
   return 'TEXT';
 };
 
-export const nowClock = () => {
+export const nowClock = (): string => {
   return new Date().toLocaleTimeString('en-US', { hour12: false });
 };

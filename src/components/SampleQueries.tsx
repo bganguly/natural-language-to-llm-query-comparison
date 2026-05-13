@@ -1,4 +1,12 @@
-const SampleQueries = ({ groups, activeQuery, onPick }) => {
+import { QueryGroup } from '../constants.ts';
+
+interface SampleQueriesProps {
+  groups: QueryGroup[];
+  activeQuery: string;
+  onPick: (query: string) => void;
+}
+
+const SampleQueries = ({ groups, activeQuery, onPick }: SampleQueriesProps) => {
   return (
     <div className="card query-lib">
       <p className="label">Sample Queries</p>

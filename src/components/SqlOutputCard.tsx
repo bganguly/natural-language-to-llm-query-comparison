@@ -1,3 +1,15 @@
+interface SqlOutputCardProps {
+  statusClass: string;
+  statusText: string;
+  sql: string;
+  isPlaceholder: boolean;
+  explanation: string;
+  onSqlChange: (sql: string) => void;
+  onCopy: () => void;
+  onRunEdited: () => void;
+  canShowActions: boolean;
+}
+
 const SqlOutputCard = ({
   statusClass,
   statusText,
@@ -8,7 +20,7 @@ const SqlOutputCard = ({
   onCopy,
   onRunEdited,
   canShowActions,
-}) => {
+}: SqlOutputCardProps) => {
   return (
     <div className="out-card">
       <div className="out-head">

@@ -1,4 +1,17 @@
-const LogPanel = ({ logs, open, onToggle }) => {
+interface LogEntry {
+  id: string;
+  ts: string;
+  message: string;
+  level: string;
+}
+
+interface LogPanelProps {
+  logs: LogEntry[];
+  open: boolean;
+  onToggle: () => void;
+}
+
+const LogPanel = ({ logs, open, onToggle }: LogPanelProps) => {
   return (
     <div className="log card full-span">
       <div className="log-hd" onClick={onToggle}>

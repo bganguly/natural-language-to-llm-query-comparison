@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 const WAGE_COL_RE = /wage|salary|pay|compensation/i;
 const YEAR_COL_RE = /year|quarter/i;
 
-const formatValue = (value, col = '') => {
+const formatValue = (value: unknown, col = ''): string => {
   if (value === null || value === undefined) {
     return '—';
   }
@@ -34,7 +34,24 @@ const formatValue = (value, col = '') => {
 const FETCH_LIMITS = [50, 100, 500, 1000, 5000];
 const PAGE_SIZES = [10, 25, 50, 100];
 
-const ResultsCard = ({ results, fetchLimit, onFetchMore }) => {
+interface ResultsState {
+  visible: boolean;
+  loading: boolean;
+  error: string;
+  fields: string[];
+  rows: Record<string, unknown>[];
+  elapsed: string;
+  badge: string;
+  badgeClass: string;
+}
+
+interface ResultsCardProps {
+  results: ResultsState;
+  fetchLimit: number;
+  onFetchMore: (limit: number) => void;
+}
+
+const ResultsCard = ({ results, fetchLimit, onFetchMore }: ResultsCardProps) => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 

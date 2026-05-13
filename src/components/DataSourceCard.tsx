@@ -1,6 +1,13 @@
-import { ADJS, NOUNS } from '../constants.js';
+import { ADJS, NOUNS } from '../constants.ts';
 
-const DataSourceCard = ({ bucket, onBucketChange, tableName, onTableNameChange }) => {
+interface DataSourceCardProps {
+  bucket: string;
+  onBucketChange: (bucket: string) => void;
+  tableName: string;
+  onTableNameChange: (name: string) => void;
+}
+
+const DataSourceCard = ({ bucket, onBucketChange, tableName, onTableNameChange }: DataSourceCardProps) => {
   const randomAlias = () => {
     const adj = ADJS[Math.floor(Math.random() * ADJS.length)];
     const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];

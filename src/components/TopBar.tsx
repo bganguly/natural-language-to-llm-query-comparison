@@ -1,4 +1,8 @@
-const TopBar = ({ duckReady }) => {
+interface TopBarProps {
+  duckReady: 'loading' | 'ready' | 'error';
+}
+
+const TopBar = ({ duckReady }: TopBarProps) => {
   const pillClass =
     duckReady === 'ready' ? 'ready' : duckReady === 'error' ? '' : 'loading';
   const pillText =

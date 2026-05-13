@@ -1,4 +1,10 @@
-const NlQueryBar = ({ value, onChange, onTranslate }) => {
+interface NlQueryBarProps {
+  value: string;
+  onChange: (value: string) => void;
+  onTranslate: () => void;
+}
+
+const NlQueryBar = ({ value, onChange, onTranslate }: NlQueryBarProps) => {
   return (
     <div className="card">
       <p className="label">Natural Language Query</p>

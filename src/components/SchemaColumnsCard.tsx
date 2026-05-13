@@ -1,7 +1,14 @@
 import { useState } from 'react';
-import { SQL_TYPES } from '../constants.js';
+import { SQL_TYPES, ColDef } from '../constants.ts';
 
-const SchemaColumnsCard = ({ cols, onSniff, onAddCol, onRemoveCol }) => {
+interface SchemaColumnsCardProps {
+  cols: ColDef[];
+  onSniff: () => void;
+  onAddCol: (name: string, type: string) => void;
+  onRemoveCol: (index: number) => void;
+}
+
+const SchemaColumnsCard = ({ cols, onSniff, onAddCol, onRemoveCol }: SchemaColumnsCardProps) => {
   const [newColName, setNewColName] = useState('');
   const [newColType, setNewColType] = useState('TEXT');
 

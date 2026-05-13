@@ -1,5 +1,17 @@
 import { useState } from 'react';
-import { DIALECTS, MODELS } from '../constants.js';
+import { DIALECTS, MODELS } from '../constants.ts';
+
+interface ApiConfigCardProps {
+  anthropicKey: string;
+  onAnthropicKeyChange: (key: string) => void;
+  openAiKey: string;
+  onOpenAiKeyChange: (key: string) => void;
+  model: string;
+  onModelChange: (model: string) => void;
+  dialect: string;
+  onDialectChange: (dialect: string) => void;
+  providerName: string;
+}
 
 const ApiConfigCard = ({
   anthropicKey,
@@ -11,7 +23,7 @@ const ApiConfigCard = ({
   dialect,
   onDialectChange,
   providerName,
-}) => {
+}: ApiConfigCardProps) => {
   const [showAnthropic, setShowAnthropic] = useState(false);
   const [showOpenAi, setShowOpenAi] = useState(false);
 

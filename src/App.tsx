@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { callProvider } from './api.js';
-import ApiConfigCard from './components/ApiConfigCard.jsx';
-import DataSourceCard from './components/DataSourceCard.jsx';
-import LogPanel from './components/LogPanel.jsx';
-import NlQueryBar from './components/NlQueryBar.jsx';
-import ResultsCard from './components/ResultsCard.jsx';
-import SampleQueries from './components/SampleQueries.jsx';
-import SchemaColumnsCard from './components/SchemaColumnsCard.jsx';
-import SqlOutputCard from './components/SqlOutputCard.jsx';
-import TopBar from './components/TopBar.jsx';
+import { callProvider } from './api.ts';
+import ApiConfigCard from './components/ApiConfigCard.tsx';
+import DataSourceCard from './components/DataSourceCard.tsx';
+import LogPanel from './components/LogPanel.tsx';
+import NlQueryBar from './components/NlQueryBar.tsx';
+import ResultsCard from './components/ResultsCard.tsx';
+import SampleQueries from './components/SampleQueries.tsx';
+import SchemaColumnsCard from './components/SchemaColumnsCard.tsx';
+import SqlOutputCard from './components/SqlOutputCard.tsx';
+import TopBar from './components/TopBar.tsx';
 import {
   DEFAULT_BUCKET,
   DEFAULT_COLS,
@@ -19,14 +19,14 @@ import {
   STORAGE_KEY,
   nowClock,
   parquetTypeToSql,
-} from './constants.js';
-import { useDuckDb } from './hooks/useDuckDb.js';
+} from './constants.ts';
+import { useDuckDb } from './hooks/useDuckDb.ts';
 
-const providerFromModel = (model) => (model.startsWith('gpt-') ? 'OpenAI' : 'Anthropic');
+const providerFromModel = (model: string): string => (model.startsWith('gpt-') ? 'OpenAI' : 'Anthropic');
 
 // Replace a bare table-name reference with the full read_parquet(...) expression.
 // Handles: FROM alias, JOIN alias, FROM alias AS x, subquery aliases.
-const fixTableRef = (sqlStr, alias, bucketUrl) => {
+const fixTableRef = (sqlStr: string, alias: string, bucketUrl: string): string => {
   if (!alias) return sqlStr;
   // Already uses read_parquet — nothing to do
   if (/read_parquet/i.test(sqlStr)) return sqlStr;
@@ -54,13 +54,16 @@ const App = () => {
   const [explanation, setExplanation] = useState('');
   const [statusText, setStatusText] = useState('waiting');
   const [statusClass, setStatusClass] = useState('b-idle');
-  const [results, setResults] = useState({
+  const [results, setResults] = useState<{
+    visible: boolean; loading: boolean; error: string;
+    fields: string[]; rows: Record<string, unknown>[]; elapsed: string; badge: string; badgeClass: string;
+  }>({
     visible: false, loading: false, error: '',
     fields: [], rows: [], elapsed: '0.0', badge: '', badgeClass: 'b-idle',
   });
 
   // ── Log state ─────────────────────────────────────────────────────────────
-  const [logs, setLogs] = useState([]);
+  const [logs, setLogs] = useState<{ id: string; ts: string; message: string; level: string }[]>([]);
   const [logOpen, setLogOpen] = useState(false);
   const [fetchLimit, setFetchLimit] = useState(500);
 
@@ -68,7 +71,7 @@ const App = () => {
   const providerName = useMemo(() => providerFromModel(model), [model]);
   const activeApiKey = providerName === 'OpenAI' ? openAiKey.trim() : anthropicKey.trim();
 
-  const addLog = (message, level = 'n') => {
+  const addLog = (message: string, level = 'n') => {
     setLogs((prev) => [...prev, { id: `${Date.now()}-${prev.length}`, ts: nowClock(), message, level }]);
     setLogOpen(true);
   };
@@ -77,7 +80,7 @@ const App = () => {
   const { duckReady, getConnection } = useDuckDb(addLog);
 
   // ── Run SQL ───────────────────────────────────────────────────────────────
-  const runQuery = async (rawSql, limitOverride) => {
+  const runQuery = async (rawSql: string, limitOverride?: number) => {
     const sqlToRun = rawSql.trim();
     if (!sqlToRun) { alert('Enter SQL first.'); return; }
     const cap = limitOverride ?? fetchLimit;
@@ -98,8 +101,8 @@ const App = () => {
       addLog(`Query done in ${elapsed}s - ${rows.length} rows`, 'ok');
       setResults({ visible: true, loading: false, error: '', fields, rows, elapsed, badge: `${rows.length} rows`, badgeClass: 'b-ok' });
     } catch (error) {
-      addLog(`Query error: ${error.message}`, 'er');
-      setResults({ visible: true, loading: false, error: error.message, fields: [], rows: [], elapsed: '0.0', badge: 'error', badgeClass: 'b-err' });
+      addLog(`Query error: ${(error as Error).message}`, 'er');
+      setResults({ visible: true, loading: false, error: (error as Error).message, fields: [], rows: [], elapsed: '0.0', badge: 'error', badgeClass: 'b-err' });
     }
   };
 
@@ -118,7 +121,7 @@ const App = () => {
       if (detected.length) { setCols(detected); addLog(`Detected ${detected.length} columns`, 'ok'); }
       else addLog('No columns detected from parquet_schema response', 'wn');
     } catch (error) {
-      addLog(`Sniff error: ${error.message}`, 'er');
+      addLog(`Sniff error: ${(error as Error).message}`, 'er');
     }
   };
 
@@ -180,9 +183,9 @@ const App = () => {
       addLog(`SQL ready (${fixedSql.length} chars)`, 'ok');
       await runQuery(fixedSql);
     } catch (error) {
-      setSql(`Error: ${error.message}`); setSqlIsPlaceholder(true);
+      setSql(`Error: ${(error as Error).message}`); setSqlIsPlaceholder(true);
       setStatusText('error'); setStatusClass('b-err');
-      addLog(`Exception: ${error.message}`, 'er');
+      addLog(`Exception: ${(error as Error).message}`, 'er');
     }
   };
 
@@ -251,7 +254,7 @@ const App = () => {
             cols={cols}
             onSniff={sniffSchema}
             onAddCol={(name, type) => setCols((prev) => [...prev, { name, type }])}
-            onRemoveCol={(index) => setCols((prev) => prev.filter((_, i) => i !== index))}
+            onRemoveCol={(index: number) => setCols((prev) => prev.filter((_, i) => i !== index))}
           />
         </div>
 
