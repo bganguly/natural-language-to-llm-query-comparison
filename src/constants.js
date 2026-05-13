@@ -86,3 +86,18 @@ export const DEFAULT_COLS = [
 ];
 
 export const SQL_TYPES = ['TEXT', 'INTEGER', 'DOUBLE', 'DATE', 'BOOLEAN', 'TIMESTAMP'];
+
+export const DEFAULT_BUCKET =
+  'https://h1b-nlq-parquet-577479071532-20260511.s3.us-east-1.amazonaws.com/data/parquet/dol_lca_h1b_fy2020_q1_to_fy2026_q1.parquet?v=full_multi_fiscal_noempty_countrynull_20260512';
+
+export function parquetTypeToSql(rawType) {
+  const raw = String(rawType || '').toUpperCase();
+  if (raw === 'INT32' || raw === 'INT64' || raw === 'INT96') return 'INTEGER';
+  if (raw === 'FLOAT' || raw === 'DOUBLE') return 'DOUBLE';
+  if (raw === 'BOOLEAN') return 'BOOLEAN';
+  return 'TEXT';
+}
+
+export function nowClock() {
+  return new Date().toLocaleTimeString('en-US', { hour12: false });
+}
