@@ -76,7 +76,7 @@ export const QUERY_GROUPS = [
 export const DEFAULT_COLS = [
   { name: 'employer', type: 'TEXT' },
   { name: 'job_title', type: 'TEXT' },
-  { name: 'country', type: 'TEXT', note: 'mostly null in this dataset — country queries may return 0 rows' },
+  { name: 'country', type: 'TEXT', note: 'country is mostly null in this dataset — queries may return 0 rows or far fewer than expected; if one provider returns results and another does not, it is likely due to how each model handles NULL filtering, not a query error' },
   { name: 'work_location', type: 'TEXT' },
   { name: 'wage', type: 'DOUBLE' },
   { name: 'status', type: 'TEXT' },
