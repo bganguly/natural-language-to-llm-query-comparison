@@ -1,0 +1,110 @@
+:root {
+  color-scheme: light;
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --text: #1f2937;
+  --muted: #4b5563;
+  --line: #d6dce8;
+  --accent: #0f766e;
+  --accent-2: #115e59;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 10% 0%, #e8f8f3 0%, rgba(232, 248, 243, 0) 38%),
+    radial-gradient(circle at 90% 10%, #e5efff 0%, rgba(229, 239, 255, 0) 36%),
+    var(--bg);
+  color: var(--text);
+}
+
+.app-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem 2.5rem;
+}
+
+.hero h1 {
+  margin: 0.25rem 0 0;
+  font-size: clamp(1.7rem, 2.4vw, 2.5rem);
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  color: var(--accent-2);
+  font-weight: 700;
+}
+
+.lead {
+  margin-top: 0.7rem;
+  max-width: 75ch;
+  color: var(--muted);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.6rem;
+  padding: 0.62rem 0.95rem;
+  text-decoration: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn:hover {
+  background: var(--accent-2);
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+.viewer h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.legacy-frame {
+  width: 100%;
+  height: 72vh;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 1rem 0.75rem 1.5rem;
+  }
+
+  .legacy-frame {
+    height: 78vh;
+  }
+}

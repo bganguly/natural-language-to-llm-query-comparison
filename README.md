@@ -14,7 +14,25 @@ A lightweight, browser-only playground to compare natural-language-to-SQL genera
 ## Project Structure
 
 - `nl_to_sql.html`: complete UI + app logic (no build step).
+- `public/legacy/nl_to_sql.html`: untouched copy of the legacy app served by Vite.
+- `src/`: React 19 migration shell.
+- `index.html`: Vite entry HTML for the React app.
 - `.gitignore`: local ignores.
+
+## React 19 Migration Shell
+
+This repository now includes a standard React 19 + Vite app for incremental migration.
+
+- Home route (`/`) loads a React shell.
+- Legacy route (`/legacy/nl_to_sql.html`) serves the preserved HTML app.
+- The shell embeds the legacy app via iframe so behavior remains unchanged while migration proceeds.
+
+### Run React App
+
+1. Install dependencies: `npm install`
+2. Start dev server: `npm run dev`
+3. Build production assets: `npm run build`
+4. Preview build: `npm run preview`
 
 ## How To Run
 

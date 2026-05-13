@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NL → SQL · H1B Explorer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f6f5f2;--surface:#fff;--border:#e2e0d8;--border2:#c8c5bb;
+  --text:#1c1b18;--muted:#66645e;--hint:#a8a59e;
+  --accent:#2563eb;--accent-bg:#eff4ff;--accent-text:#1d4ed8;
+  --green-bg:#dcfce7;--green:#15803d;
+  --red-bg:#fee2e2;--red:#b91c1c;
+  --mono:'Courier New',monospace;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:10}
+.topbar h1{font-size:14px;font-weight:600}
+.topbar .sub{font-size:12px;color:var(--hint)}
+.duck-pill{font-size:11px;padding:3px 9px;border-radius:20px;margin-left:auto;background:var(--bg);border:1px solid var(--border);color:var(--hint)}
+.duck-pill.ready{background:var(--green-bg);color:var(--green);border-color:transparent}
+.duck-pill.loading{background:var(--accent-bg);color:var(--accent-text);border-color:transparent}
+.wrap{max-width:1300px;margin:0 auto;padding:24px 16px 60px;display:grid;grid-template-columns:260px 220px 1fr;gap:16px;align-items:start}
+.full{grid-column:1/-1}
+@media(max-width:900px){.wrap{grid-template-columns:260px 1fr}}
+@media(max-width:600px){.wrap{grid-template-columns:1fr}.full{grid-column:1}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hint);margin-bottom:10px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.field:last-child{margin-bottom:0}
+.field>label{font-size:12px;font-weight:500;color:var(--muted)}
+.hint{font-size:11px;color:var(--hint);margin-top:3px}
+input[type=text],input[type=password],select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;transition:border .15s}
+input:focus,select:focus{border-color:var(--accent);background:#fff}
+.irow{display:flex;gap:6px;align-items:center}
+.irow input{flex:1}
+.btn-sm{padding:7px 11px;border:1px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer;font-size:13px;color:var(--muted);white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+.btn-sm:hover{border-color:var(--border2);color:var(--text)}
+.btn-sm:disabled{opacity:.4;cursor:not-allowed}
+.col-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;min-height:10px}
+.ctag{display:inline-flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:3px 9px;font-size:12px;color:var(--muted)}
+.ctag .ctype{font-family:var(--mono);font-size:10px;color:var(--hint)}
+.ctag .cdel{cursor:pointer;color:var(--hint);margin-left:1px;font-size:14px;line-height:1}
+.ctag .cdel:hover{color:var(--red)}
+.nlrow{display:flex;gap:8px;margin-bottom:10px}
+.nlrow input{flex:1;font-size:15px;padding:9px 12px}
+.btn-go{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+.btn-go:hover{opacity:.88}
+.btn-go:disabled{opacity:.4;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;background:none;border:1px solid var(--border);border-radius:20px;padding:4px 11px;cursor:pointer;color:var(--muted)}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.out-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.out-head{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--bg);border-bottom:1px solid var(--border)}
+.badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px}
+.b-idle{background:var(--bg);color:var(--hint);border:1px solid var(--border)}
+.b-spin{background:var(--accent-bg);color:var(--accent-text)}
+.b-ok{background:var(--green-bg);color:var(--green)}
+.b-err{background:var(--red-bg);color:var(--red)}
+.btn-copy{font-size:12px;padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--muted)}
+.btn-copy:hover{background:var(--bg)}
+#sql-out{padding:14px 16px;font-family:var(--mono);font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-all;min-height:60px;color:var(--text)}
+#sql-out.ph{color:var(--hint);font-family:inherit;font-style:italic}
+.expl{border-top:1px solid var(--border);padding:10px 16px;font-size:13px;color:var(--muted);line-height:1.6;display:none}
+.expl strong{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--hint);display:block;margin-bottom:3px;font-weight:700}
+/* results */
+.results-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;display:none}
+.results-head{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--bg);border-bottom:1px solid var(--border)}
+.results-head .lbl{margin:0}
+.tbl-wrap{overflow-x:auto;max-height:420px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{position:sticky;top:0;background:var(--bg);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;letter-spacing:.04em;text-transform:uppercase}
+tbody tr:hover{background:var(--bg)}
+tbody td{padding:7px 12px;border-bottom:.5px solid var(--border);color:var(--text);font-size:13px;white-space:nowrap}
+tbody td.num{font-family:var(--mono);text-align:right;color:var(--muted)}
+.row-count{font-size:11px;color:var(--hint);padding:8px 14px;border-top:1px solid var(--border)}
+.qspin-wrap{display:flex;align-items:center;gap:10px;padding:20px 16px}
+.qspin-label{font-size:13px;color:var(--muted);font-style:italic}
+@keyframes blink{0%,100%{opacity:.1}50%{opacity:1}}
+.dots{display:flex;align-items:center;gap:8px;padding:4px 0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;animation:blink 1.1s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+.dot-lbl{font-size:13px;color:var(--muted);font-style:italic}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:11px;height:11px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;display:inline-block;vertical-align:middle}
+.qlib-group{margin-bottom:14px}
+.qlib-group:last-child{margin-bottom:0}
+.qlib-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--hint);margin-bottom:6px}
+.qlib-item{display:block;width:100%;text-align:left;background:none;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--muted);cursor:pointer;margin-bottom:4px;line-height:1.4;transition:border-color .1s,color .1s,background .1s}
+.qlib-item:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.qlib-item.active{border-color:var(--accent);color:var(--accent-text);background:var(--accent-bg);font-weight:500}
+
+.log-hd{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;cursor:pointer;user-select:none}
+.log-hd span{font-size:12px;font-family:var(--mono);color:#666}
+#log-body{display:none;padding:10px 14px;max-height:260px;overflow-y:auto}
+.ll{font-family:var(--mono);font-size:12px;line-height:1.9;white-space:pre-wrap;word-break:break-all}
+.ll.dim{color:#3a3a3a}.ll.n{color:#aaa}.ll.ok{color:#4ade80}.ll.er{color:#f87171}.ll.wn{color:#fbbf24}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>NL → SQL</h1>
+  <span class="sub">· H1B Explorer · runs locally</span>
+  <span class="duck-pill loading" id="duck-pill">⏳ loading DuckDB…</span>
+</div>
+
+<div class="wrap">
+  <div>
+    <div class="card">
+      <p class="lbl">Data source</p>
+      <div class="field">
+        <label>Parquet endpoint</label>
+        <input type="text" id="bucket" value="https://h1b-nlq-parquet-577479071532-20260511.s3.us-east-1.amazonaws.com/data/parquet/dol_lca_h1b_fy2020_q1_to_fy2026_q1.parquet?v=full_multi_fiscal_noempty_countrynull_20260512" />
+      </div>
+      <div class="field">
+        <label>Table alias</label>
+        <div class="irow">
+          <input type="text" id="tablename" value="h1b" />
+          <button class="btn-sm" id="alias-btn">↺</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="lbl">API config</p>
+      <div class="field">
+        <label id="key-label">API key</label>
+        <div class="irow">
+          <input type="password" id="apikey" placeholder="sk-ant-... or sk-..." autocomplete="off" />
+          <button class="btn-sm" id="key-toggle">show</button>
+        </div>
+        <p class="hint" id="key-hint">Key goes directly to the provider — never stored remotely.</p>
+      </div>
+      <div class="field">
+        <label>Model</label>
+        <select id="model">
+          <optgroup label="Anthropic">
+            <option value="claude-sonnet-4-5">claude-sonnet-4-5 (default)</option>
+            <option value="claude-opus-4-5">claude-opus-4-5 (most capable)</option>
+            <option value="claude-haiku-4-5-20251001">claude-haiku-4-5 (fastest)</option>
+          </optgroup>
+          <optgroup label="OpenAI">
+            <option value="gpt-4o">gpt-4o</option>
+            <option value="gpt-4o-mini">gpt-4o-mini (fast)</option>
+            <option value="gpt-4-turbo">gpt-4-turbo</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>SQL dialect</label>
+        <select id="dialect">
+          <option value="DuckDB" selected>DuckDB</option>
+          <option value="Presto/Athena">Presto / Athena</option>
+          <option value="Spark SQL">Spark SQL</option>
+          <option value="BigQuery">BigQuery</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <p class="lbl">Schema columns</p>
+      <div class="irow" style="margin-bottom:8px">
+        <button class="btn-sm" id="sniff-btn" style="width:100%;justify-content:center">⚡ Auto-detect from parquet</button>
+      </div>
+      <div class="col-tags" id="col-tags"></div>
+      <div class="irow" style="margin-top:6px">
+        <input type="text" id="new-col-name" placeholder="column name" />
+        <select id="new-col-type" style="width:100px;flex-shrink:0;font-family:var(--mono);font-size:10px;color:var(--hint);padding:3px 8px;height:33px;border-radius:20px;border:1px solid var(--border);background:var(--bg);text-align:center;text-align-last:center">
+          <option>TEXT</option><option>INTEGER</option><option>DOUBLE</option>
+          <option>DATE</option><option>BOOLEAN</option><option>TIMESTAMP</option>
+        </select>
+        <button class="btn-sm" id="add-col-btn">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIDDLE: query library -->
+  <div>
+    <div class="card" style="max-height:calc(100vh - 120px);overflow-y:auto">
+      <p class="lbl">Sample queries</p>
+      <div id="query-library"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: query + output -->
+  <div>
+    <div class="card">
+      <p class="lbl">Natural language query</p>
+      <div class="nlrow">
+        <input type="text" id="nl-query" placeholder="e.g. top employers by fiscal year" />
+        <button class="btn-go" id="run-btn">✦ Translate + Run</button>
+      </div>
+    </div>
+
+    <div class="out-card">
+      <div class="out-head">
+        <span class="badge b-idle" id="status-badge">waiting</span>
+        <button class="btn-copy" id="copy-btn" style="display:none">⎘ copy SQL</button>
+      </div>
+      <div id="sql-out" class="ph">Translated SQL will appear here.</div>
+      <div class="expl" id="expl"><strong>Why this query</strong><span id="expl-text"></span></div>
+    </div>
+
+    <div class="results-card" id="results-card">
+      <div class="results-head">
+        <p class="lbl">Results</p>
+        <span class="badge b-idle" id="query-badge" style="display:none"></span>
+      </div>
+      <div class="qspin-wrap" id="qspin" style="display:none">
+        <span class="spin"></span>
+        <span class="qspin-label" id="qspin-label">Running query…</span>
+      </div>
+      <div class="tbl-wrap" id="tbl-wrap" style="display:none"></div>
+      <div class="row-count" id="row-count" style="display:none"></div>
+    </div>
+
+    <div class="log full">
+      <div class="log-hd" id="log-hd">
+        <span id="log-hd-txt">▸ verbose log</span>
+        <span id="log-chev" style="color:#444;font-size:11px">expand</span>
+      </div>
+      <div id="log-body">
+        <div id="log-lines"><div class="ll dim">— no activity yet —</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.1-dev106.0/+esm';
+
+var SK='nlsql_v5';
+var ADJS=['amber','brisk','coral','dusty','ember','frost','gilded','hazy','ivory','jade'];
+var NOUNS=['table','frame','batch','slice','shard','view','store'];
+var QUERY_GROUPS=[
+  {label:'Employers',queries:[
+    'top employers by count',
+    'top 20 employers by total wage spend',
+    'top employers by fiscal_year and fiscal_quarter',
+    'top employers by fiscal_year and fiscal_quarter where status = \'Certified\'',
+    'fastest growing employers from fiscal_year 2020 to fiscal_year 2025',
+    'employers with the most applications in India vs China by year',
+    'top 5 employers headcount by fiscal_year and fiscal_quarter',
+  ]},
+  {label:'Wages',queries:[
+    'average wage by job title',
+    'top 10 job titles with highest average wage',
+    'average wage by job_title for fiscal_year 2025',
+    'top 20 employers by total wage spend',
+    'wage gap between certified and denied applications by job title',
+    'average wage by work_location and fiscal_year',
+    'wage distribution by country and fiscal_quarter',
+  ]},
+  {label:'Geography',queries:[
+    'which countries have the most H1B applications by year',
+    'top countries by application count in fiscal_year 2025',
+    'top work locations by application count',
+    'top work locations by average wage',
+    'application count by country and fiscal_year and fiscal_quarter',
+  ]},
+  {label:'Trends',queries:[
+    'quarter over quarter growth in applications by employer',
+    'application count by fiscal_year and fiscal_quarter',
+    'top job titles by fiscal_year and fiscal_quarter',
+    'certified vs denied application counts by fiscal_year',
+    'employer count by status and fiscal_year',
+    'new employers appearing for the first time each fiscal_year',
+  ]},
+  {label:'Status & Jobs',queries:[
+    'count of applications by status',
+    'top 10 job titles with highest average wage in fiscal_year 2025',
+    'job titles with most certified applications by fiscal_quarter',
+    'denial rate by employer in fiscal_year 2024',
+    'top job titles by country and fiscal_year',
+  ]},
+];
+var DEFAULT_COLS=[
+  {name:'employer',type:'TEXT'},{name:'job_title',type:'TEXT'},
+  {name:'country',type:'TEXT'},{name:'work_location',type:'TEXT'},
+  {name:'wage',type:'DOUBLE'},{name:'status',type:'TEXT'},
+  {name:'year',type:'INTEGER'},{name:'fiscal_year',type:'INTEGER'},
+  {name:'fiscal_quarter',type:'INTEGER'}
+];
+
+var cols=DEFAULT_COLS.slice();
+var logOpen=false;
+var saveTimer=null;
+var dbInitPromise=null;
+var dbConn=null;
+
+function g(id){return document.getElementById(id);}
+
+function log(msg,cls){
+  cls=cls||'n';
+  var lines=g('log-lines');
+  var ph=lines.querySelector('.dim');
+  if(ph&&ph.textContent.indexOf('no activity')>=0) lines.removeChild(ph);
+  var d=document.createElement('div');
+  d.className='ll '+cls;
+  d.textContent='['+new Date().toLocaleTimeString('en-US',{hour12:false})+']  '+msg;
+  lines.appendChild(d);
+  g('log-body').scrollTop=999999;
+  if(!logOpen){logOpen=true;g('log-body').style.display='block';g('log-hd-txt').textContent='▾ verbose log';g('log-chev').textContent='collapse';}
+}
+g('log-hd').onclick=function(){
+  logOpen=!logOpen;
+  g('log-body').style.display=logOpen?'block':'none';
+  g('log-hd-txt').textContent=logOpen?'▾ verbose log':'▸ verbose log';
+  g('log-chev').textContent=logOpen?'collapse':'expand';
+};
+
+function persist(){
+  try{localStorage.setItem(SK,JSON.stringify({
+    bucket:g('bucket').value,tablename:g('tablename').value,
+    apikey:g('apikey').value,dialect:g('dialect').value,
+    model:g('model').value,nlquery:g('nl-query').value,cols:cols
+  }));}catch(e){}
+}
+function debSave(){clearTimeout(saveTimer);saveTimer=setTimeout(persist,400);}
+function hydrate(){
+  try{
+    var s=JSON.parse(localStorage.getItem(SK));
+    if(!s) return;
+    if(s.bucket)    g('bucket').value    =s.bucket;
+    if(s.tablename) g('tablename').value =s.tablename;
+    if(s.apikey)    g('apikey').value    =s.apikey;
+    if(s.dialect)   g('dialect').value   =s.dialect;
+    if(s.model)     g('model').value     =s.model;
+    if(s.nlquery)   g('nl-query').value  =s.nlquery;
+    if(s.cols&&s.cols.length) cols=s.cols;
+  }catch(e){}
+}
+function randomAlias(){
+  var a=ADJS[Math.floor(Math.random()*ADJS.length)];
+  var n=NOUNS[Math.floor(Math.random()*NOUNS.length)];
+  g('tablename').value=a+'_'+n+'_'+(Math.floor(Math.random()*90)+10);
+  persist();
+}
+
+function renderCols(){
+  g('col-tags').innerHTML=cols.map(function(c,i){
+    return '<span class="ctag"><span>'+c.name+'</span>'
+      +'<span class="ctype">'+c.type+'</span>'
+      +'<span class="cdel" data-i="'+i+'">×</span></span>';
+  }).join('');
+  g('col-tags').querySelectorAll('.cdel').forEach(function(x){
+    x.onclick=function(){cols.splice(+x.dataset.i,1);renderCols();persist();};
+  });
+}
+function addCol(){
+  var n=g('new-col-name').value.trim().replace(/\s+/g,'_');
+  var t=g('new-col-type').value;
+  if(!n||cols.some(function(c){return c.name===n;})) return;
+  cols.push({name:n,type:t});g('new-col-name').value='';
+  renderCols();persist();
+}
+function renderChips(){
+  var wrap=g('query-library');
+  wrap.innerHTML='';
+  QUERY_GROUPS.forEach(function(grp){
+    var sec=document.createElement('div');
+    sec.className='qlib-group';
+    var hd=document.createElement('div');
+    hd.className='qlib-label';
+    hd.textContent=grp.label;
+    sec.appendChild(hd);
+    grp.queries.forEach(function(q){
+      var b=document.createElement('button');
+      b.className='qlib-item';
+      b.textContent=q;
+      b.onclick=function(){
+        g('nl-query').value=q;
+        g('nl-query').focus();
+        debSave();
+        // highlight active
+        wrap.querySelectorAll('.qlib-item').forEach(function(x){x.classList.remove('active');});
+        b.classList.add('active');
+      };
+      sec.appendChild(b);
+    });
+    wrap.appendChild(sec);
+  });
+}
+
+// type mapping from Parquet physical types
+function parquetTypeToSQL(raw){
+  raw=(raw||'').toUpperCase();
+  if(raw==='INT32'||raw==='INT64'||raw==='INT96') return 'INTEGER';
+  if(raw==='FLOAT'||raw==='DOUBLE')               return 'DOUBLE';
+  if(raw==='BOOLEAN')                             return 'BOOLEAN';
+  return 'TEXT'; // BYTE_ARRAY, FIXED_LEN_BYTE_ARRAY → TEXT
+}
+
+// ── DuckDB init (single shared promise) ───────────────────────────────────
+function initDuckDB(){
+  if(dbInitPromise) return dbInitPromise;
+  dbInitPromise=(async function(){
+    log('Initialising DuckDB-WASM …');
+    g('duck-pill').textContent='⏳ loading…';
+    g('duck-pill').className='duck-pill loading';
+    const bundles=duckdb.getJsDelivrBundles();
+    const bundle=await duckdb.selectBundle(bundles);
+    const workerUrl=URL.createObjectURL(
+      new Blob(['importScripts("'+bundle.mainWorker+'");'],{type:'text/javascript'})
+    );
+    const worker=new Worker(workerUrl);
+    const db=new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(),worker);
+    await db.instantiate(bundle.mainModule,bundle.pthreadWorker);
+    URL.revokeObjectURL(workerUrl);
+    dbConn=await db.connect();
+    log('DuckDB-WASM ready ✓','ok');
+    g('duck-pill').textContent='✓ DuckDB ready';
+    g('duck-pill').className='duck-pill ready';
+    return dbConn;
+  })();
+  dbInitPromise.catch(function(e){
+    log('DuckDB init failed: '+e.message,'er');
+    g('duck-pill').textContent='✗ DuckDB failed';
+    g('duck-pill').className='duck-pill';
+    dbInitPromise=null;
+  });
+  return dbInitPromise;
+}
+
+// ── sniff schema ──────────────────────────────────────────────────────────
+async function sniffSchema(){
+  var src=g('bucket').value.trim();
+  if(!src){alert('Enter a parquet endpoint first.');return;}
+  var btn=g('sniff-btn');
+  btn.disabled=true;
+  btn.textContent='⏳ detecting…';
+  btn.style.background='var(--accent-bg)';
+  btn.style.color='var(--accent-text)';
+  btn.style.borderColor='var(--accent)';
+  log('Sniffing schema …');
+  function resetBtn(ok){
+    setTimeout(function(){
+      btn.textContent='⚡ Auto-detect from parquet';
+      btn.style.background=btn.style.color=btn.style.borderColor='';
+      btn.disabled=false;
+    },ok?2500:3000);
+  }
+  try{
+    var conn=await initDuckDB();
+    // read all rows from parquet_schema — no filter, get every column
+    var result=await conn.query("SELECT name, type FROM parquet_schema('"+src+"')");
+    var rows=result.toArray();
+    log('parquet_schema: '+rows.length+' raw rows','dim');
+    // rows include nested schema entries; skip the root "schema" row and message rows
+    var detected=rows.map(function(r){
+      var obj=(typeof r.toJSON==='function')?r.toJSON():r;
+      return {name:String(obj.name||''),raw:String(obj.type||'')};
+    }).filter(function(r){
+      // skip root schema row and group/message rows (they have empty or 'schema' name)
+      return r.name && r.name!=='schema' && r.raw && r.raw!=='';
+    });
+    log('Detected '+detected.length+' columns: '+detected.map(function(r){return r.name;}).join(', '),'ok');
+    cols=detected.map(function(r){return {name:r.name,type:parquetTypeToSQL(r.raw)};});
+    renderCols();persist();
+    btn.textContent='✓ '+cols.length+' cols detected';
+    btn.style.background='var(--green-bg)';
+    btn.style.color='var(--green)';
+    btn.style.borderColor='transparent';
+    resetBtn(true);
+  }catch(e){
+    log('Sniff error: '+e.message,'er');
+    btn.textContent='✗ failed — retry';
+    btn.style.background='var(--red-bg)';
+    btn.style.color='var(--red)';
+    btn.style.borderColor='transparent';
+    resetBtn(false);
+  }
+}
+
+// ── run query ─────────────────────────────────────────────────────────────
+async function runQuery(sql){
+  g('results-card').style.display='block';
+  g('qspin').style.display='flex';
+  g('tbl-wrap').style.display='none';
+  g('row-count').style.display='none';
+  g('query-badge').style.display='inline-flex';
+  g('query-badge').className='badge b-spin';
+  g('query-badge').innerHTML='<span class="spin"></span> querying';
+  var t0=Date.now();
+  try{
+    g('qspin-label').textContent='Fetching parquet + running query…';
+    var conn=await initDuckDB();
+    var result=await conn.query(sql);
+    var elapsed=((Date.now()-t0)/1000).toFixed(1);
+    var fields=result.schema.fields;
+    var rows=result.toArray();
+    log('Query done in '+elapsed+'s — '+rows.length+' rows','ok');
+    var thead='<thead><tr>'+fields.map(function(f){return '<th>'+f.name+'</th>';}).join('')+'</tr></thead>';
+    var tbody='<tbody>'+rows.map(function(row){
+      var obj=(typeof row.toJSON==='function')?row.toJSON():row;
+      return '<tr>'+fields.map(function(f){
+        var v=obj[f.name];
+        if(v===null||v===undefined) v='—';
+        var isNum=(typeof v==='number'||typeof v==='bigint');
+        if(typeof v==='bigint') v=Number(v).toLocaleString('en-US');
+        else if(typeof v==='number'){
+          if(Number.isInteger(v)) v=v.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+          else v=v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+        }
+        else v=String(v);
+        return '<td'+(isNum?' class="num"':'')+'>'+v+'</td>';
+      }).join('')+'</tr>';
+    }).join('')+'</tbody>';
+    g('tbl-wrap').innerHTML='<table>'+thead+tbody+'</table>';
+    g('tbl-wrap').style.display='block';
+    g('row-count').textContent='Showing '+rows.length+' rows · '+elapsed+'s';
+    g('row-count').style.display='block';
+    g('query-badge').className='badge b-ok';
+    g('query-badge').textContent=rows.length+' rows';
+  }catch(e){
+    log('Query error: '+e.message,'er');
+    g('tbl-wrap').innerHTML='<div style="padding:14px 16px;font-size:13px;color:var(--red)">Error: '+e.message+'</div>';
+    g('tbl-wrap').style.display='block';
+    g('query-badge').className='badge b-err';
+    g('query-badge').textContent='error';
+  }finally{
+    g('qspin').style.display='none';
+  }
+}
+
+// ── translate ─────────────────────────────────────────────────────────────
+async function translate(){
+  var key    =g('apikey').value.trim();
+  var src    =g('bucket').value.trim();
+  var alias  =g('tablename').value.trim()||'h1b';
+  var nl     =g('nl-query').value.trim();
+  var dialect=g('dialect').value;
+  var model  =g('model').value;
+  log('──────────────────────');
+  var isOpenAI = model.startsWith('gpt-');
+  if(!nl){log('No query entered.','wn');g('nl-query').focus();return;}
+  if(!key){log('No API key.','er');alert('Enter your '+(isOpenAI?'OpenAI':'Anthropic')+' API key.');return;}
+  log('Query: "'+nl+'"');
+  log('Model: '+model+' | Dialect: '+dialect);
+  var schema=cols.map(function(c){return '  '+c.name+' ('+c.type+')';}).join('\n');
+  var sys='You are an expert SQL engineer. Convert natural language to SQL.\n'
+    +'Respond ONLY with a raw JSON object, no markdown, no backticks, two keys:\n'
+    +'"sql" (string) and "explanation" (one sentence).\n\n'
+    +'Use '+dialect+' syntax.\n'
+    +'Source: read_parquet(\''+src+'\') AS '+alias+'\n'
+    +'Schema:\n'+schema+'\n'
+    +'Default TOP N=10. ORDER BY for ranking. COUNT(*) for counts. AVG(wage) for averages.\n'
+    +'fiscal_year+fiscal_quarter together for fiscal queries. year column for calendar year.\n'
+    +'Always add WHERE country IS NOT NULL when country column is used.';
+  g('status-badge').className='badge b-spin';
+  g('status-badge').innerHTML='<span class="spin"></span> translating';
+  g('run-btn').disabled=true;
+  g('sql-out').className='';
+  g('sql-out').innerHTML='<div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot-lbl">asking Claude…</span></div>';
+  g('copy-btn').style.display='none';
+  g('expl').style.display='none';
+  log('Provider: '+(isOpenAI?'OpenAI':'Anthropic')+' | Model: '+model);
+  try{
+  var resText;
+  if(isOpenAI){
+    var res=await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+key
+      },
+      body:JSON.stringify({
+        model:model,
+        max_tokens:1000,
+        messages:[
+          {role:'system',content:sys},
+          {role:'user',content:nl}
+        ]
+      })
+    });
+    log('HTTP '+res.status+' '+res.statusText,res.ok?'ok':'er');
+    resText=await res.text();
+    log('Response: '+resText.slice(0,300),'dim');
+    if(!res.ok){var em=res.statusText;try{em=JSON.parse(resText).error.message||em;}catch(e){}log('API error: '+em,'er');throw new Error(em);}
+    var data=JSON.parse(resText);
+    log('Tokens: '+JSON.stringify(data.usage||{}),'dim');
+    var raw=((data.choices||[])[0]||{}).message?.content||'';
+    raw=raw.trim().replace(/```json|```/g,'').trim();
+    log('Model: '+raw.slice(0,200),'dim');
+    var parsed;
+    try{parsed=JSON.parse(raw);log('JSON OK ✓','ok');}
+    catch(pe){log('JSON parse failed: '+pe.message,'er');throw new Error('Bad JSON from model.');}
+    g('sql-out').className='';
+    g('sql-out').textContent=parsed.sql;
+    g('status-badge').innerHTML='SQL ready';g('status-badge').className='badge b-ok';
+    g('copy-btn').style.display='inline-flex';
+    log('SQL ready ('+parsed.sql.length+' chars)','ok');
+    if(parsed.explanation){g('expl-text').textContent=parsed.explanation;g('expl').style.display='block';}
+    await runQuery(parsed.sql);
+  } else {
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({model:model,max_tokens:1000,system:sys,messages:[{role:'user',content:nl}]})
+    });
+    log('HTTP '+res.status+' '+res.statusText,res.ok?'ok':'er');
+    resText=await res.text();
+    log('Response: '+resText.slice(0,300),'dim');
+    if(!res.ok){var em=res.statusText;try{em=JSON.parse(resText).error.message||em;}catch(e){}log('API error: '+em,'er');throw new Error(em);}
+    var data=JSON.parse(resText);
+    log('Tokens: '+JSON.stringify(data.usage||{}),'dim');
+    var raw=data.content.map(function(b){return b.text||'';}).join('').trim().replace(/```json|```/g,'').trim();
+    log('Model: '+raw.slice(0,200),'dim');
+    var parsed;
+    try{parsed=JSON.parse(raw);log('JSON OK ✓','ok');}
+    catch(pe){log('JSON parse failed: '+pe.message,'er');throw new Error('Bad JSON from model.');}
+    g('sql-out').className='';
+    g('sql-out').textContent=parsed.sql;
+    g('status-badge').innerHTML='SQL ready';g('status-badge').className='badge b-ok';
+    g('copy-btn').style.display='inline-flex';
+    log('SQL ready ('+parsed.sql.length+' chars)','ok');
+    if(parsed.explanation){g('expl-text').textContent=parsed.explanation;g('expl').style.display='block';}
+    await runQuery(parsed.sql);
+  }
+  }catch(e){
+    g('sql-out').className='ph';g('sql-out').textContent='Error: '+e.message;
+    g('status-badge').innerHTML='error';g('status-badge').className='badge b-err';
+    log('Exception: '+e.message,'er');
+  }finally{
+    g('run-btn').disabled=false;
+  }
+}
+
+// ── wire up ───────────────────────────────────────────────────────────────
+g('run-btn').onclick=translate;
+g('nl-query').onkeydown=function(e){if(e.key==='Enter')translate();};
+g('alias-btn').onclick=randomAlias;
+g('sniff-btn').onclick=sniffSchema;
+g('add-col-btn').onclick=addCol;
+g('new-col-name').onkeydown=function(e){if(e.key==='Enter')addCol();};
+g('key-toggle').onclick=function(){
+  var f=g('apikey');f.type=f.type==='password'?'text':'password';
+  g('key-toggle').textContent=f.type==='password'?'show':'hide';
+};
+g('copy-btn').onclick=function(){
+  navigator.clipboard.writeText(g('sql-out').textContent).then(function(){
+    g('copy-btn').textContent='✓ copied!';
+    setTimeout(function(){g('copy-btn').textContent='⎘ copy SQL';},1500);
+  });
+};
+['bucket','tablename','apikey','nl-query'].forEach(function(id){g(id).oninput=debSave;});
+g('dialect').onchange=persist;
+g('model').onchange=function(){
+  persist();
+  var m=g('model').value;
+  var isOAI=m.startsWith('gpt-');
+  g('key-label').textContent=isOAI?'OpenAI API key':'Anthropic API key';
+  g('apikey').placeholder=isOAI?'sk-...':'sk-ant-...';
+  g('key-hint').textContent=isOAI?'Goes directly to api.openai.com only.':'Goes directly to api.anthropic.com only.';
+};
+
+hydrate();
+renderCols();
+renderChips();
+initDuckDB().catch(function(){});
+</script>
+</body>
+</html>
