@@ -4,7 +4,7 @@ A lightweight, browser-only app to compare natural-language-to-SQL generation be
 
 ![screenshot](docs/screenshot.png)
 
-## What It Does
+## What This Repo Does
 
 - Loads data directly from a Parquet URL. (any parquet endpoint can be set- as the app allows for auto detection of schema)
 - Includes schema auto-detection from parquet metadata.
