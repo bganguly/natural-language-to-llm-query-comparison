@@ -168,7 +168,7 @@ const App = () => {
       const colNotes = cols
         .filter((c) => c.note && new RegExp(`\\b${c.name}s?\\b`, 'i').test(nlQuery.trim()))
         .map((c) => c.note);
-      const queryWarn = QUERY_WARNS[nlQuery.trim()];
+      const queryWarn = Object.entries(QUERY_WARNS).find(([k]) => nlQuery.trim().toLowerCase().includes(k.toLowerCase()))?.[1];
       const allNotes = [...colNotes, ...(queryWarn ? [queryWarn] : [])];
       const finalExplanation = allNotes.length
         ? `${parsedExplanation} ⚠️ Note: ${allNotes.join(' ')}`
