@@ -2,7 +2,7 @@
  * callProvider — sends the NL prompt to the active LLM provider and
  * returns { sql, explanation }.  Throws on network/API/parse errors.
  */
-export async function callProvider({ model, apiKey, systemPrompt, nlQuery, providerName }) {
+export const callProvider = async ({ model, apiKey, systemPrompt, nlQuery, providerName }) => {
   let raw;
 
   if (providerName === 'OpenAI') {
@@ -60,4 +60,4 @@ export async function callProvider({ model, apiKey, systemPrompt, nlQuery, provi
     sql: String(parsed.sql || '').trim(),
     explanation: String(parsed.explanation || '').trim(),
   };
-}
+};

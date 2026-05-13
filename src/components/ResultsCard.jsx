@@ -1,4 +1,4 @@
-function formatValue(value) {
+const formatValue = (value) => {
   if (value === null || value === undefined) {
     return '—';
   }
@@ -23,7 +23,7 @@ function formatValue(value) {
   return String(value);
 }
 
-export default function ResultsCard({ results }) {
+const ResultsCard = ({ results }) => {
   if (!results.visible) {
     return null;
   }
@@ -73,4 +73,6 @@ export default function ResultsCard({ results }) {
       )}
     </div>
   );
-}
+};
+
+export default ResultsCard;

@@ -1,4 +1,4 @@
-export default function TopBar({ duckReady }) {
+const TopBar = ({ duckReady }) => {
   const pillClass =
     duckReady === 'ready' ? 'ready' : duckReady === 'error' ? '' : 'loading';
   const pillText =
@@ -22,4 +22,6 @@ export default function TopBar({ duckReady }) {
       </div>
     </header>
   );
-}
+};
+
+export default TopBar;

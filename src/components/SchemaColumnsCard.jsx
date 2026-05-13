@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { SQL_TYPES } from '../constants.js';
 
-export default function SchemaColumnsCard({ cols, onSniff, onAddCol, onRemoveCol }) {
+const SchemaColumnsCard = ({ cols, onSniff, onAddCol, onRemoveCol }) => {
   const [newColName, setNewColName] = useState('');
   const [newColType, setNewColType] = useState('TEXT');
 
-  function handleAdd() {
+  const handleAdd = () => {
     const cleanName = newColName.trim().replace(/\s+/g, '_');
     if (!cleanName || cols.some((c) => c.name === cleanName)) return;
     onAddCol(cleanName, newColType);
@@ -49,4 +49,6 @@ export default function SchemaColumnsCard({ cols, onSniff, onAddCol, onRemoveCol
       </div>
     </div>
   );
-}
+};
+
+export default SchemaColumnsCard;

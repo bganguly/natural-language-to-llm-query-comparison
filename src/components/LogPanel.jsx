@@ -1,4 +1,4 @@
-export default function LogPanel({ logs, open, onToggle }) {
+const LogPanel = ({ logs, open, onToggle }) => {
   return (
     <div className="log card full-span">
       <div className="log-hd" onClick={onToggle}>
@@ -17,4 +17,6 @@ export default function LogPanel({ logs, open, onToggle }) {
       )}
     </div>
   );
-}
+};
+
+export default LogPanel;

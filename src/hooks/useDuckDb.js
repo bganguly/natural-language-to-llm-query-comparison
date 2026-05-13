@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as duckdb from '@duckdb/duckdb-wasm';
 
-export function useDuckDb(addLog) {
+export const useDuckDb = (addLog) => {
   const [duckReady, setDuckReady] = useState('loading');
   const connRef = useRef(null);
   const initPromiseRef = useRef(null);
@@ -47,4 +47,4 @@ export function useDuckDb(addLog) {
   }, [getConnection]);
 
   return { duckReady, getConnection };
-}
+};

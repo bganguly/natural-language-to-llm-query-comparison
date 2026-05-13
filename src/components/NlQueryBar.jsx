@@ -1,4 +1,4 @@
-export default function NlQueryBar({ value, onChange, onTranslate }) {
+const NlQueryBar = ({ value, onChange, onTranslate }) => {
   return (
     <div className="card">
       <p className="label">Natural Language Query</p>
@@ -15,4 +15,6 @@ export default function NlQueryBar({ value, onChange, onTranslate }) {
       </div>
     </div>
   );
-}
+};
+
+export default NlQueryBar;

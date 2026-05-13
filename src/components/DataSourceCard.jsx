@@ -1,7 +1,7 @@
 import { ADJS, NOUNS } from '../constants.js';
 
-export default function DataSourceCard({ bucket, onBucketChange, tableName, onTableNameChange }) {
-  function randomAlias() {
+const DataSourceCard = ({ bucket, onBucketChange, tableName, onTableNameChange }) => {
+  const randomAlias = () => {
     const adj = ADJS[Math.floor(Math.random() * ADJS.length)];
     const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
     onTableNameChange(`${adj}_${noun}_${Math.floor(Math.random() * 90) + 10}`);
@@ -21,4 +21,6 @@ export default function DataSourceCard({ bucket, onBucketChange, tableName, onTa
       </div>
     </div>
   );
-}
+};
+
+export default DataSourceCard;

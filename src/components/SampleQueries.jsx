@@ -1,4 +1,4 @@
-export default function SampleQueries({ groups, activeQuery, onPick }) {
+const SampleQueries = ({ groups, activeQuery, onPick }) => {
   return (
     <div className="card query-lib">
       <p className="label">Sample Queries</p>
@@ -18,4 +18,6 @@ export default function SampleQueries({ groups, activeQuery, onPick }) {
       ))}
     </div>
   );
-}
+};
+
+export default SampleQueries;

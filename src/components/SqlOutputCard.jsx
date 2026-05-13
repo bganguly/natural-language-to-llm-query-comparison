@@ -1,4 +1,4 @@
-export default function SqlOutputCard({
+const SqlOutputCard = ({
   statusClass,
   statusText,
   sql,
@@ -8,7 +8,7 @@ export default function SqlOutputCard({
   onCopy,
   onRunEdited,
   canShowActions,
-}) {
+}) => {
   return (
     <div className="out-card">
       <div className="out-head">
@@ -40,4 +40,6 @@ export default function SqlOutputCard({
       )}
     </div>
   );
-}
+};
+
+export default SqlOutputCard;

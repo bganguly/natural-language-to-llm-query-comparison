@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { DIALECTS, MODELS } from '../constants.js';
 
-export default function ApiConfigCard({
+const ApiConfigCard = ({
   anthropicKey,
   onAnthropicKeyChange,
   openAiKey,
@@ -11,7 +11,7 @@ export default function ApiConfigCard({
   dialect,
   onDialectChange,
   providerName,
-}) {
+}) => {
   const [showAnthropic, setShowAnthropic] = useState(false);
   const [showOpenAi, setShowOpenAi] = useState(false);
 
@@ -75,4 +75,6 @@ export default function ApiConfigCard({
       </select>
     </div>
   );
-}
+};
+
+export default ApiConfigCard;
