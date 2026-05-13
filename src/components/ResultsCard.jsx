@@ -12,8 +12,8 @@ const formatValue = (value) => {
   if (typeof value === 'number') {
     if (Number.isInteger(value)) {
       return value.toLocaleString('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
       });
     }
     return value.toLocaleString('en-US', {
