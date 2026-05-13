@@ -133,10 +133,17 @@ const App = () => {
     addLog(`Provider: ${providerName} | Model: ${model} | Dialect: ${dialect}`);
 
     const schema = cols.map((c) => `  ${c.name} (${c.type})`).join('\n');
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-based
+    // DOL fiscal year runs Oct–Sep; FY2026 = Oct 2025–Sep 2026
+    const currentFiscalYear = currentMonth >= 10 ? currentYear + 1 : currentYear;
+
     const systemPrompt =
       'You are an expert SQL engineer. Convert natural language to SQL.\n' +
       'Respond ONLY with a raw JSON object, no markdown, no backticks, two keys:\n' +
       '"sql" (string) and "explanation" (one sentence).\n\n' +
+      `Today's date: ${now.toISOString().slice(0, 10)}. Current fiscal year: ${currentFiscalYear}.\n` +
       `Use ${dialect} syntax.\n` +
       `Source: read_parquet('${bucket.trim()}') AS ${tableName.trim() || 'h1b'}\n` +
       `Schema:\n${schema}\n` +
