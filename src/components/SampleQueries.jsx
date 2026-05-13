@@ -1,3 +1,5 @@
+import { QUERY_WARNS } from '../constants.js';
+
 const SampleQueries = ({ groups, activeQuery, onPick }) => {
   return (
     <div className="card query-lib">
@@ -6,13 +8,17 @@ const SampleQueries = ({ groups, activeQuery, onPick }) => {
         <div key={group.label} className="qlib-group">
           <p className="group-label">{group.label}</p>
           {group.queries.map((q) => (
-            <button
-              key={q}
-              className={`qlib-item ${activeQuery === q ? 'active' : ''}`}
-              onClick={() => onPick(q)}
-            >
-              {q}
-            </button>
+            <div key={q} className="qlib-wrap">
+              <button
+                className={`qlib-item ${activeQuery === q ? 'active' : ''}`}
+                onClick={() => onPick(q)}
+              >
+                {q}
+              </button>
+              {QUERY_WARNS[q] && (
+                <p className="qlib-note">⚠ {QUERY_WARNS[q]}</p>
+              )}
+            </div>
           ))}
         </div>
       ))}

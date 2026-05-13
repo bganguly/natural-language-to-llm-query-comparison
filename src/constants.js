@@ -85,6 +85,11 @@ export const DEFAULT_COLS = [
   { name: 'fiscal_quarter', type: 'INTEGER' },
 ];
 
+export const QUERY_WARNS = {
+  'wage gap between certified and denied applications by job title':
+    'Results vary by provider: models that use a JOIN return fewer rows than models that use CASE WHEN aggregation',
+};
+
 export const SQL_TYPES = ['TEXT', 'INTEGER', 'DOUBLE', 'DATE', 'BOOLEAN', 'TIMESTAMP'];
 
 export const DEFAULT_BUCKET =
