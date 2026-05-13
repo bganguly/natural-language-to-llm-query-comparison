@@ -14,7 +14,7 @@ A lightweight, browser-only app to compare natural-language-to-SQL generation be
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) v18+
-- An [Anthropic](https://console.anthropic.com/) or [OpenAI](https://platform.openai.com/) API key
+- An [Anthropic](https://console.anthropic.com/) and/or [OpenAI](https://platform.openai.com/) API key — having both lets you switch providers on the fly
 
 ## Quick Start
 
@@ -24,7 +24,7 @@ npm i && npm run dev
 
 ## React 19 App
 
-- This repository now includes a componentized React 19 + Vite app.
+- This repository is a componentized React 19 + Vite app.
 - Home route (`/`) runs the React implementation.
 - Legacy route (`/legacy/nl_to_sql.html`) serves the preserved original HTML app.
 - The React header includes an "Open Original HTML" button to launch the untouched legacy page in a new tab at any time.
