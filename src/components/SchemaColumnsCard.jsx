@@ -23,6 +23,9 @@ const SchemaColumnsCard = ({ cols, onSniff, onAddCol, onRemoveCol }) => {
           <span key={`${c.name}-${i}`} className="ctag">
             {c.name}
             <span className="ctype">{c.type}</span>
+            {c.note && (
+              <span className="cnote" title={c.note}>⚠</span>
+            )}
             <button className="cdel" onClick={() => onRemoveCol(i)}>
               ×
             </button>

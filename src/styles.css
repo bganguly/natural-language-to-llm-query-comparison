@@ -255,6 +255,13 @@ select {
   padding: 0;
 }
 
+.cnote {
+  font-size: 10px;
+  cursor: help;
+  opacity: 0.7;
+  line-height: 1;
+}
+
 .out-card,
 .results-card {
   background: var(--surface);
