@@ -256,7 +256,12 @@ const App = () => {
         </div>
 
         {/* Middle column: sample queries */}
-        <SampleQueries groups={QUERY_GROUPS} activeQuery={activeQuery} onPick={(q) => { setNlQuery(q); setActiveQuery(q); }} />
+        <SampleQueries groups={QUERY_GROUPS} activeQuery={activeQuery} onPick={(q) => {
+          setNlQuery(q); setActiveQuery(q);
+          setSql('Translated SQL will appear here.'); setSqlIsPlaceholder(true);
+          setExplanation(''); setStatusText('waiting'); setStatusClass('b-idle');
+          setResults({ visible: false, loading: false, error: '', fields: [], rows: [], elapsed: '0.0', badge: '', badgeClass: 'b-idle' });
+        }} />
 
         {/* Right column: query input + SQL output + results */}
         <div>
