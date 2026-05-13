@@ -36,15 +36,13 @@ body {
 .topbar {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 12px 16px;
+  padding: 12px clamp(16px, 3vw, 48px);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .topbar-inner {
-  max-width: 1300px;
-  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -90,18 +88,16 @@ body {
 }
 
 .layout {
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 24px 16px 56px;
+  padding: 24px clamp(16px, 3vw, 48px) 56px;
   display: grid;
-  grid-template-columns: 280px 240px 1fr;
+  grid-template-columns: minmax(0, 280px) minmax(0, 240px) minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
 
 @media (max-width: 1024px) {
   .layout {
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
   }
 
   .layout > :nth-child(3) {
@@ -479,8 +475,8 @@ tbody td.num {
 }
 
 .full-span {
-  max-width: 1300px;
-  margin: 0 auto 20px;
+  padding: 0 clamp(16px, 3vw, 48px);
+  margin-bottom: 20px;
 }
 
 .log-hd {
