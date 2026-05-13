@@ -2,8 +2,6 @@
 
 A lightweight, browser-only app to compare natural-language-to-SQL generation behavior across LLM providers (Anthropic and OpenAI), then execute generated SQL with DuckDB-WASM on a Parquet dataset.
 
-![screenshot](docs/screenshot.png)
-
 ## What This Repo Does
 
 - Loads data directly from a Parquet URL. (any parquet endpoint can be set- as the app allows for auto detection of schema)
@@ -12,6 +10,8 @@ A lightweight, browser-only app to compare natural-language-to-SQL generation be
 - Enforces structured model output (`sql` + one-line `explanation`) for reliable parsing.
 - Runs generated SQL locally in-browser using DuckDB-WASM.
 - Provides grouped sample queries to compare model behavior quickly.
+
+![screenshot](docs/screenshot.png)
 
 ## Prerequisites
 
