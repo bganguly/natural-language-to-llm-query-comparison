@@ -154,7 +154,14 @@ const App = () => {
       if (!parsedSql) throw new Error('Model returned empty SQL.');
       const fixedSql = fixTableRef(parsedSql, tableName.trim() || 'h1b', bucket.trim());
       if (fixedSql !== parsedSql) addLog(`Rewrote bare table alias "${tableName.trim() || 'h1b'}" → read_parquet(...)`, 'wn');
-      setSql(fixedSql); setSqlIsPlaceholder(false); setExplanation(parsedExplanation);
+      // Append data-quality notes for columns that have known caveats
+      const colNotes = cols
+        .filter((c) => c.note && new RegExp(`\\b${c.name}\\b`, 'i').test(fixedSql))
+        .map((c) => c.note);
+      const finalExplanation = colNotes.length
+        ? `${parsedExplanation} ⚠️ Note: ${colNotes.join(' ')}`
+        : parsedExplanation;
+      setSql(fixedSql); setSqlIsPlaceholder(false); setExplanation(finalExplanation);
       setStatusText('SQL ready'); setStatusClass('b-ok');
       addLog(`SQL ready (${fixedSql.length} chars)`, 'ok');
       await runQuery(fixedSql);
