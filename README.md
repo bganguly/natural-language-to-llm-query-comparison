@@ -10,7 +10,7 @@ npm i && npm run dev
 
 ## What It Does
 
-- Loads data directly from a Parquet URL.
+- Loads data directly from a Parquet URL. (any parquet endpoint can be set- as the app allows for auto detection of schema)
 - Includes schema auto-detection from parquet metadata.
 - Translates natural language into SQL using either Anthropic or OpenAI chat models.
 - Enforces structured model output (`sql` + one-line `explanation`) for reliable parsing.
@@ -19,8 +19,7 @@ npm i && npm run dev
 
 ## React 19 App
 
-This repository now includes a componentized React 19 + Vite app.
-
+- This repository now includes a componentized React 19 + Vite app.
 - Home route (`/`) runs the React implementation.
 - Legacy route (`/legacy/nl_to_sql.html`) serves the preserved original HTML app.
 - The React header includes an "Open Original HTML" button to launch the untouched legacy page in a new tab at any time.
@@ -34,11 +33,15 @@ This repository now includes a componentized React 19 + Vite app.
 
 ## How To Run
 
-1. Open `nl_to_sql.html` in a modern browser.
-2. Set the Parquet endpoint and table alias.
-3. Add your API key.
-4. Pick model + SQL dialect.
-5. Enter a natural-language query and click **Translate + Run**.
+**React app (default):**
+1. `npm i && npm run dev`
+2. Open `http://localhost:5173` in a modern browser.
+3. Set the Parquet endpoint and table alias (or use the default).
+4. Add your Anthropic or OpenAI API key.
+5. Pick a model + SQL dialect, enter a natural-language query, and click **Translate + Run**.
+
+**Legacy HTML app (no build step):**
+1. Open `public/legacy/nl_to_sql.html` directly in a browser, or use the "Open Original HTML" button in the React app header.
 
 ## Notes
 
