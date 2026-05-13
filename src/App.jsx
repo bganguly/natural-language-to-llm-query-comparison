@@ -142,7 +142,8 @@ const App = () => {
       `Schema:\n${schema}\n` +
       'Default TOP N=10. ORDER BY for ranking. COUNT(*) for counts. AVG(wage) for averages.\n' +
       'fiscal_year+fiscal_quarter together for fiscal queries. year column for calendar year.\n' +
-      'Only add WHERE filters that are explicitly requested in the natural language query.';
+      'Only add WHERE filters that are explicitly requested in the natural language query.\n' +
+      'Use ILIKE instead of LIKE for all string pattern matching on text columns.';
 
     setStatusText('translating'); setStatusClass('b-spin');
     setSql(`asking ${providerName}...`); setSqlIsPlaceholder(true); setExplanation('');
