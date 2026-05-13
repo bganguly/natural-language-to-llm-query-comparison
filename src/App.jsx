@@ -47,6 +47,7 @@ const App = () => {
 
   // ── Query / output state ──────────────────────────────────────────────────
   const [nlQuery, setNlQuery] = useState('');
+  const [activeQuery, setActiveQuery] = useState('');
   const [sql, setSql] = useState('Translated SQL will appear here.');
   const [sqlIsPlaceholder, setSqlIsPlaceholder] = useState(true);
   const [explanation, setExplanation] = useState('');
@@ -250,7 +251,7 @@ const App = () => {
         </div>
 
         {/* Middle column: sample queries */}
-        <SampleQueries groups={QUERY_GROUPS} activeQuery={nlQuery} onPick={setNlQuery} />
+        <SampleQueries groups={QUERY_GROUPS} activeQuery={activeQuery} onPick={(q) => { setNlQuery(q); setActiveQuery(q); }} />
 
         {/* Right column: query input + SQL output + results */}
         <div>
