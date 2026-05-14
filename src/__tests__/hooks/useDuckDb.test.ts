@@ -33,9 +33,11 @@ describe('useDuckDb', () => {
     mockInstantiate.mockResolvedValue(undefined);
   });
 
-  it('starts in loading state', () => {
+  it('starts in loading state', async () => {
     const { result } = renderHook(() => useDuckDb(vi.fn()));
     expect(result.current.duckReady).toBe('loading');
+    // Drain the async init triggered by useEffect so unmount is clean
+    await act(async () => {});
   });
 
   it('transitions to ready after successful init', async () => {
