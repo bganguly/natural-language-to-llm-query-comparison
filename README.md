@@ -56,3 +56,20 @@ npm i && npm run dev
 - The API key is persisted in `localStorage` for convenience.
 - DuckDB runs locally in-browser; no backend is required.
 
+## Future Potential Improvements
+
+### Additional LLM Providers
+
+The app currently supports Anthropic and OpenAI. Other providers that could be integrated:
+
+| Provider | Models | Notes |
+|---|---|---|
+| **Google** | Gemini 2.5 Pro / Flash | Strong at structured output and SQL; REST API at `generativelanguage.googleapis.com` — would need a new code path similar to the Anthropic branch |
+| **Mistral** | Mistral Large, Codestral | Codestral is fine-tuned for code/SQL; OpenAI-compatible API — minimal changes needed |
+| **Groq** | Llama 3.3 70B, Mixtral | Very low latency inference; drop-in OpenAI-compatible API |
+| **xAI** | Grok 3 | OpenAI-compatible API |
+| **Meta (via Together/Fireworks)** | Llama 3.3 70B | Open weights hosted with OpenAI-compatible APIs |
+
+Providers with OpenAI-compatible APIs (Groq, Mistral, xAI, Together, Fireworks) could be added by simply extending the model list and changing the base URL, reusing the existing OpenAI code path. Google Gemini would require a new request/response branch.
+
+
