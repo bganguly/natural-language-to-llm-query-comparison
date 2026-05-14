@@ -430,6 +430,10 @@ tbody td {
   white-space: nowrap;
 }
 
+thead th.num {
+  text-align: right;
+}
+
 tbody td.num {
   text-align: right;
   font-family: var(--mono);

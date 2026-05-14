@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 
 const WAGE_COL_RE = /wage|salary|pay|compensation/i;
-const YEAR_COL_RE = /year|quarter/i;
+const YEAR_COL_RE = /year|quarter|date|period/i;
+
+const isNumericCol = (field: string, rows: Record<string, unknown>[]): boolean => {
+  if (WAGE_COL_RE.test(field) || YEAR_COL_RE.test(field)) return true;
+  return rows.some((row) => typeof row[field] === 'number' || typeof row[field] === 'bigint');
+};
 
 const formatValue = (value: unknown, col = ''): string => {
   if (value === null || value === undefined) {
@@ -88,7 +93,7 @@ const ResultsCard = ({ results, fetchLimit, onFetchMore }: ResultsCardProps) => 
               <thead>
                 <tr>
                   {results.fields.map((field) => (
-                    <th key={field}>{field}</th>
+                    <th key={field} className={isNumericCol(field, results.rows) ? 'num' : ''}>{field}</th>
                   ))}
                 </tr>
               </thead>

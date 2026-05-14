@@ -155,7 +155,8 @@ const App = () => {
       'Default TOP N=10. ORDER BY for ranking. COUNT(*) for counts. AVG(wage) for averages.\n' +
       'fiscal_year+fiscal_quarter together for fiscal queries. year column for calendar year.\n' +
       'Only add WHERE filters that are explicitly requested in the natural language query.\n' +
-      'Use ILIKE instead of LIKE for all string pattern matching on text columns.';
+      'Use ILIKE instead of LIKE for all string pattern matching on text columns.\n' +
+      'TOP N PER GROUP (e.g. "top 1 employer per year/quarter"): use QUALIFY ROW_NUMBER() OVER (PARTITION BY <group_cols> ORDER BY <metric> DESC) <= N after the GROUP BY — do NOT use a bare LIMIT for these queries.';
 
     setStatusText('translating'); setStatusClass('b-spin');
     setSql(`asking ${providerName}...`); setSqlIsPlaceholder(true); setExplanation('');

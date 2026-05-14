@@ -30,7 +30,7 @@ export const QUERY_GROUPS: QueryGroup[] = [
       "top employers by fiscal_year and fiscal_quarter where status = 'Certified'",
       'fastest growing employers from fiscal_year 2020 to fiscal_year 2025',
       'employers with the most applications in India vs China by year',
-      'top 5 employers headcount by fiscal_year and fiscal_quarter',
+      'top 1 employer headcount by fiscal_year and fiscal_quarter order by fiscal_year, fiscal_quarter',
     ],
   },
   {
