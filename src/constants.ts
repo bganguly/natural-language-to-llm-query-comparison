@@ -95,14 +95,28 @@ export const DEFAULT_COLS: ColDef[] = [
   { name: 'fiscal_quarter', type: 'INTEGER' },
 ];
 
-export const COL_NOTES: Record<string, string> = {
-  country: 'country is mostly null in this dataset — queries filtering by country may return 0 rows regardless of model',
-};
+export interface Note {
+  /** substring to match against the NL query; use wordMatch for column names */
+  match: string;
+  text: string;
+  /** use word-boundary regex instead of substring match (for column names) */
+  wordMatch?: boolean;
+  /** if set, note only surfaces when the active provider matches */
+  providerOnly?: string;
+}
 
-export const QUERY_WARNS: Record<string, string> = {
-  'wage gap between certified and denied applications by job title':
-    'Results vary by provider: models that use a JOIN return fewer rows than models that use CASE WHEN aggregation',
-};
+export const NOTES: Note[] = [
+  {
+    match: 'country',
+    wordMatch: true,
+    text: 'country is mostly null in this dataset — queries filtering by country may return 0 rows regardless of model',
+  },
+  {
+    match: 'wage gap between certified and denied applications by job title',
+    providerOnly: 'OpenAI',
+    text: 'Results vary by provider: models that use a JOIN return fewer rows than models that use CASE WHEN aggregation',
+  },
+];
 
 export const SQL_TYPES: string[] = ['TEXT', 'INTEGER', 'DOUBLE', 'DATE', 'BOOLEAN', 'TIMESTAMP'];
 

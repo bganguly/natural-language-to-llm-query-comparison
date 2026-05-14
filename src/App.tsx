@@ -12,11 +12,10 @@ import TopBar from './components/TopBar.tsx';
 import {
   DEFAULT_BUCKET,
   DEFAULT_COLS,
-  COL_NOTES,
   LEGACY_STORAGE_KEY,
   MODELS,
+  NOTES,
   QUERY_GROUPS,
-  QUERY_WARNS,
   STORAGE_KEY,
   nowClock,
   parquetTypeToSql,
@@ -169,14 +168,12 @@ const App = () => {
       if (!parsedSql) throw new Error('Model returned empty SQL.');
       const fixedSql = fixTableRef(parsedSql, tableName.trim() || 'h1b', bucket.trim());
       if (fixedSql !== parsedSql) addLog(`Rewrote bare table alias "${tableName.trim() || 'h1b'}" → read_parquet(...)`, 'wn');
-      // Append data-quality notes only when the NL query is explicitly about that column
-      const colNotes = cols
-        .filter((c) => COL_NOTES[c.name] && new RegExp(`\\b${c.name}s?\\b`, 'i').test(nlQuery.trim()))
-        .map((c) => COL_NOTES[c.name]);
-      const queryWarn = providerName === 'OpenAI'
-        ? Object.entries(QUERY_WARNS).find(([k]) => nlQuery.trim().toLowerCase().includes(k.toLowerCase()))?.[1]
-        : undefined;
-      const allNotes = [...colNotes, ...(queryWarn ? [queryWarn] : [])];
+      const allNotes = NOTES
+        .filter((n) => !n.providerOnly || n.providerOnly === providerName)
+        .filter((n) => n.wordMatch
+          ? new RegExp(`\\b${n.match}s?\\b`, 'i').test(nlQuery.trim())
+          : nlQuery.trim().toLowerCase().includes(n.match.toLowerCase()))
+        .map((n) => n.text);
       const finalExplanation = allNotes.length
         ? `${parsedExplanation} ⚠️ Note: ${allNotes.join(' ')}`
         : parsedExplanation;
