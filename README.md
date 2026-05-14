@@ -1,6 +1,6 @@
 # natural-language-to-llm-query-comparison
 
-A lightweight, browser-only app to compare natural-language-to-SQL generation behavior across LLM providers (Anthropic and OpenAI), then execute generated SQL with DuckDB-WASM on a Parquet dataset.
+A lightweight app to compare natural-language-to-SQL generation behavior across LLM providers (Anthropic and OpenAI), then execute generated SQL with DuckDB-WASM on a Parquet dataset.
 
 ## What This Repo Does
 
