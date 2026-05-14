@@ -12,6 +12,7 @@ import TopBar from './components/TopBar.tsx';
 import {
   DEFAULT_BUCKET,
   DEFAULT_COLS,
+  COL_NOTES,
   LEGACY_STORAGE_KEY,
   MODELS,
   QUERY_GROUPS,
@@ -170,8 +171,8 @@ const App = () => {
       if (fixedSql !== parsedSql) addLog(`Rewrote bare table alias "${tableName.trim() || 'h1b'}" → read_parquet(...)`, 'wn');
       // Append data-quality notes only when the NL query is explicitly about that column
       const colNotes = cols
-        .filter((c) => c.note && new RegExp(`\\b${c.name}s?\\b`, 'i').test(nlQuery.trim()))
-        .map((c) => c.note);
+        .filter((c) => COL_NOTES[c.name] && new RegExp(`\\b${c.name}s?\\b`, 'i').test(nlQuery.trim()))
+        .map((c) => COL_NOTES[c.name]);
       const queryWarn = providerName === 'OpenAI'
         ? Object.entries(QUERY_WARNS).find(([k]) => nlQuery.trim().toLowerCase().includes(k.toLowerCase()))?.[1]
         : undefined;

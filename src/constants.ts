@@ -81,13 +81,12 @@ export const QUERY_GROUPS: QueryGroup[] = [
 export interface ColDef {
   name: string;
   type: string;
-  note?: string;
 }
 
 export const DEFAULT_COLS: ColDef[] = [
   { name: 'employer', type: 'TEXT' },
   { name: 'job_title', type: 'TEXT' },
-  { name: 'country', type: 'TEXT', note: 'country is mostly null in this dataset — queries filtering by country may return 0 rows regardless of model' },
+  { name: 'country', type: 'TEXT' },
   { name: 'work_location', type: 'TEXT' },
   { name: 'wage', type: 'DOUBLE' },
   { name: 'status', type: 'TEXT' },
@@ -95,6 +94,10 @@ export const DEFAULT_COLS: ColDef[] = [
   { name: 'fiscal_year', type: 'INTEGER' },
   { name: 'fiscal_quarter', type: 'INTEGER' },
 ];
+
+export const COL_NOTES: Record<string, string> = {
+  country: 'country is mostly null in this dataset — queries filtering by country may return 0 rows regardless of model',
+};
 
 export const QUERY_WARNS: Record<string, string> = {
   'wage gap between certified and denied applications by job title':
