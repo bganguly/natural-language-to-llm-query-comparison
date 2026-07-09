@@ -20,9 +20,6 @@ const TopBar = ({ duckReady }: TopBarProps) => {
           <p className="sub">H1B explorer · Anthropic &amp; OpenAI · DuckDB-WASM</p>
         </div>
         <div className="topbar-actions">
-          <a className="btn" href="/legacy/nl_to_sql.html" target="_blank" rel="noreferrer">
-            Open Original HTML
-          </a>
           <span className={`duck-pill ${pillClass}`}>{pillText}</span>
         </div>
       </div>
