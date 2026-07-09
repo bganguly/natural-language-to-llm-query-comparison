@@ -6,8 +6,8 @@ export const NOUNS = ['table', 'frame', 'batch', 'slice', 'shard', 'view', 'stor
 
 export const MODELS: { anthropic: string[]; openai: string[] } = {
   anthropic: [
-    'claude-sonnet-4-5',
-    'claude-opus-4-5',
+    'claude-opus-4-7',
+    'claude-sonnet-4-6',
     'claude-haiku-4-5-20251001',
   ],
   openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],

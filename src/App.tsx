@@ -94,6 +94,7 @@ const App = () => {
     const t0 = Date.now();
     try {
       const conn = await getConnection();
+      addLog(`DuckDB › executing query (limit ${cap})...`);
       const result = await conn.query(safeSQL);
       const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
       const fields = result.schema.fields.map((f) => f.name);
@@ -133,7 +134,7 @@ const App = () => {
       alert(`Enter your ${providerName} API key.`);
       return;
     }
-    addLog('--------------------');
+    setLogs([]); setLogOpen(true);
     addLog(`Query: "${nlQuery.trim()}"`);
     addLog(`Provider: ${providerName} | Model: ${model} | Dialect: ${dialect}`);
 
@@ -158,14 +159,17 @@ const App = () => {
       'Use ILIKE instead of LIKE for all string pattern matching on text columns.\n' +
       'TOP N PER GROUP (e.g. "top 1 employer per year/quarter"): use QUALIFY ROW_NUMBER() OVER (PARTITION BY <group_cols> ORDER BY <metric> DESC) <= N after the GROUP BY — do NOT use a bare LIMIT for these queries.';
 
-    setStatusText('translating'); setStatusClass('b-spin');
+    setStatusText(`calling ${providerName}...`); setStatusClass('b-spin');
     setSql(`asking ${providerName}...`); setSqlIsPlaceholder(true); setExplanation('');
     setResults({ visible: false, loading: false, error: '', fields: [], rows: [], elapsed: '0.0', badge: '', badgeClass: 'b-idle' });
 
     try {
+      addLog(`API › POST ${providerName} (${model})...`);
+      const t1 = Date.now();
       const { sql: parsedSql, explanation: parsedExplanation } = await callProvider({
         model, apiKey: activeApiKey, systemPrompt, nlQuery: nlQuery.trim(), providerName,
       });
+      addLog(`API › response received in ${((Date.now() - t1) / 1000).toFixed(1)}s`, 'ok');
       if (!parsedSql) throw new Error('Model returned empty SQL.');
       const fixedSql = fixTableRef(parsedSql, tableName.trim() || 'h1b', bucket.trim());
       if (fixedSql !== parsedSql) addLog(`Rewrote bare table alias "${tableName.trim() || 'h1b'}" → read_parquet(...)`, 'wn');
@@ -179,9 +183,10 @@ const App = () => {
         ? `${parsedExplanation} ⚠️ Note: ${allNotes.join(' ')}`
         : parsedExplanation;
       setSql(fixedSql); setSqlIsPlaceholder(false); setExplanation(finalExplanation);
-      setStatusText('SQL ready'); setStatusClass('b-ok');
-      addLog(`SQL ready (${fixedSql.length} chars)`, 'ok');
+      setStatusText('executing SQL...'); setStatusClass('b-spin');
+      addLog(`SQL ready (${fixedSql.length} chars) — running...`, 'ok');
       await runQuery(fixedSql);
+      setStatusText('SQL ready'); setStatusClass('b-ok');
     } catch (error) {
       setSql(`Error: ${(error as Error).message}`); setSqlIsPlaceholder(true);
       setStatusText('error'); setStatusClass('b-err');
@@ -266,9 +271,10 @@ const App = () => {
           setResults({ visible: false, loading: false, error: '', fields: [], rows: [], elapsed: '0.0', badge: '', badgeClass: 'b-idle' });
         }} />
 
-        {/* Right column: query input + SQL output + results */}
+        {/* Right column: query input + activity log + SQL output + results */}
         <div>
           <NlQueryBar value={nlQuery} onChange={(v) => { setNlQuery(v); if (activeQuery && !v.startsWith(activeQuery)) setActiveQuery(''); }} onTranslate={translate} />
+          <LogPanel logs={logs} open={logOpen} onToggle={() => setLogOpen((s) => !s)} />
           <SqlOutputCard
             statusClass={statusClass} statusText={statusText}
             sql={sql} isPlaceholder={sqlIsPlaceholder} explanation={explanation}
@@ -284,8 +290,6 @@ const App = () => {
           />
         </div>
       </div>
-
-      <LogPanel logs={logs} open={logOpen} onToggle={() => setLogOpen((s) => !s)} />
     </main>
   );
 };

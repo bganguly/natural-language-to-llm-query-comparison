@@ -23,21 +23,24 @@ export const useDuckDb = (addLog: AddLog): UseDuckDbResult => {
 
     initPromiseRef.current = (async () => {
       try {
-        addLogRef.current('Initialising DuckDB-WASM ...');
         setDuckReady('loading');
+        addLogRef.current('DuckDB › fetching WASM bundle from CDN...');
         const bundles = duckdb.getJsDelivrBundles();
         const bundle = await duckdb.selectBundle(bundles);
+        addLogRef.current(`DuckDB › bundle selected: ${bundle.mainModule.split('/').pop()}`);
         const workerUrl = URL.createObjectURL(
           new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
         );
+        addLogRef.current('DuckDB › starting web worker...');
         const worker = new Worker(workerUrl);
         const db = new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(), worker);
+        addLogRef.current('DuckDB › instantiating engine...');
         await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
         URL.revokeObjectURL(workerUrl);
         const conn = await db.connect();
         connRef.current = conn;
         setDuckReady('ready');
-        addLogRef.current('DuckDB-WASM ready', 'ok');
+        addLogRef.current('DuckDB › ready', 'ok');
         return conn;
       } catch (error) {
         setDuckReady('error');

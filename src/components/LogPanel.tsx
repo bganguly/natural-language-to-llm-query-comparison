@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 interface LogEntry {
   id: string;
   ts: string;
@@ -12,11 +14,17 @@ interface LogPanelProps {
 }
 
 const LogPanel = ({ logs, open, onToggle }: LogPanelProps) => {
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [logs, open]);
+
   return (
-    <div className="log card full-span">
+    <div className="log card">
       <div className="log-hd" onClick={onToggle}>
-        <span>{open ? '▾ verbose log' : '▸ verbose log'}</span>
-        <span className="muted-small">{open ? 'collapse' : 'expand'}</span>
+        <span>{open ? '▾ activity log' : '▸ activity log'}</span>
+        <span className="muted-small">{logs.length} entries{open ? ' · collapse' : ''}</span>
       </div>
       {open && (
         <div className="log-body">
@@ -26,6 +34,7 @@ const LogPanel = ({ logs, open, onToggle }: LogPanelProps) => {
               [{line.ts}] {line.message}
             </div>
           ))}
+          <div ref={bottomRef} />
         </div>
       )}
     </div>
