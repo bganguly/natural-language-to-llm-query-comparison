@@ -11,6 +11,7 @@ interface ApiConfigCardProps {
   dialect: string;
   onDialectChange: (dialect: string) => void;
   providerName: string;
+  errors: Record<string, string>;
 }
 
 const ApiConfigCard = ({
@@ -23,6 +24,7 @@ const ApiConfigCard = ({
   dialect,
   onDialectChange,
   providerName,
+  errors,
 }: ApiConfigCardProps) => {
   const [showAnthropic, setShowAnthropic] = useState(false);
   const [showOpenAi, setShowOpenAi] = useState(false);
@@ -37,12 +39,14 @@ const ApiConfigCard = ({
           type={showAnthropic ? 'text' : 'password'}
           value={anthropicKey}
           placeholder="sk-ant-..."
+          className={errors.anthropicKey ? 'input-error' : ''}
           onChange={(e) => onAnthropicKeyChange(e.target.value)}
         />
         <button className="btn-sm" onClick={() => setShowAnthropic((s) => !s)}>
           {showAnthropic ? 'hide' : 'show'}
         </button>
       </div>
+      <p className="input-hint">{errors.anthropicKey ?? ''}</p>
 
       <label>OpenAI API key</label>
       <div className="row">
@@ -50,12 +54,14 @@ const ApiConfigCard = ({
           type={showOpenAi ? 'text' : 'password'}
           value={openAiKey}
           placeholder="sk-..."
+          className={errors.openAiKey ? 'input-error' : ''}
           onChange={(e) => onOpenAiKeyChange(e.target.value)}
         />
         <button className="btn-sm" onClick={() => setShowOpenAi((s) => !s)}>
           {showOpenAi ? 'hide' : 'show'}
         </button>
       </div>
+      <p className="input-hint">{errors.openAiKey ?? ''}</p>
 
       <p className="hint">Active provider: {providerName} (selected from model).</p>
 

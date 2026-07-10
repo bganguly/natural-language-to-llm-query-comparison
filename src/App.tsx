@@ -66,6 +66,7 @@ const App = () => {
   const [logs, setLogs] = useState<{ id: string; ts: string; message: string; level: string }[]>([]);
   const [logOpen, setLogOpen] = useState(false);
   const [fetchLimit, setFetchLimit] = useState(500);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const hydratedRef = useRef(false);
   const providerName = useMemo(() => providerFromModel(model), [model]);
@@ -76,13 +77,20 @@ const App = () => {
     setLogOpen(true);
   };
 
+  const showFieldError = (field: string, message: string) => {
+    setFieldErrors((prev) => ({ ...prev, [field]: message }));
+  };
+  const clearFieldError = (field: string) => {
+    setFieldErrors((prev) => { const next = { ...prev }; delete next[field]; return next; });
+  };
+
   // ── DuckDB ────────────────────────────────────────────────────────────────
   const { duckReady, getConnection } = useDuckDb(addLog);
 
   // ── Run SQL ───────────────────────────────────────────────────────────────
   const runQuery = async (rawSql: string, limitOverride?: number) => {
     const sqlToRun = rawSql.trim();
-    if (!sqlToRun) { alert('Enter SQL first.'); return; }
+    if (!sqlToRun) { addLog('No SQL to run.', 'wn'); return; }
     const cap = limitOverride ?? fetchLimit;
     // Always strip any LIMIT/OFFSET the LLM injected, then apply our cap
     const stripped = sqlToRun
@@ -109,7 +117,7 @@ const App = () => {
 
   // ── Schema sniff ──────────────────────────────────────────────────────────
   const sniffSchema = async () => {
-    if (!bucket.trim()) { alert('Enter a parquet endpoint first.'); return; }
+    if (!bucket.trim()) { showFieldError('bucket', 'Parquet endpoint is required.'); return; }
     try {
       addLog('Sniffing schema ...');
       const conn = await getConnection();
@@ -130,8 +138,9 @@ const App = () => {
   const translate = async () => {
     if (!nlQuery.trim()) { addLog('No query entered.', 'wn'); return; }
     if (!activeApiKey) {
+      const field = providerName === 'OpenAI' ? 'openAiKey' : 'anthropicKey';
       addLog(`No API key for ${providerName}.`, 'er');
-      alert(`Enter your ${providerName} API key.`);
+      showFieldError(field, `${providerName} API key is required.`);
       return;
     }
     setLogs([]); setLogOpen(true);
@@ -245,15 +254,17 @@ const App = () => {
         {/* Left column: config panels */}
         <div>
           <DataSourceCard
-            bucket={bucket} onBucketChange={setBucket}
+            bucket={bucket} onBucketChange={(v) => { setBucket(v); clearFieldError('bucket'); }}
             tableName={tableName} onTableNameChange={setTableName}
+            errors={fieldErrors} onClearError={clearFieldError}
           />
           <ApiConfigCard
-            anthropicKey={anthropicKey} onAnthropicKeyChange={setAnthropicKey}
-            openAiKey={openAiKey} onOpenAiKeyChange={setOpenAiKey}
+            anthropicKey={anthropicKey} onAnthropicKeyChange={(v) => { setAnthropicKey(v); clearFieldError('anthropicKey'); }}
+            openAiKey={openAiKey} onOpenAiKeyChange={(v) => { setOpenAiKey(v); clearFieldError('openAiKey'); }}
             model={model} onModelChange={setModel}
             dialect={dialect} onDialectChange={setDialect}
             providerName={providerName}
+            errors={fieldErrors}
           />
           <SchemaColumnsCard
             cols={cols}

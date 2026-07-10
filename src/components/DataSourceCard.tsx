@@ -5,9 +5,11 @@ interface DataSourceCardProps {
   onBucketChange: (bucket: string) => void;
   tableName: string;
   onTableNameChange: (name: string) => void;
+  errors: Record<string, string>;
+  onClearError: (field: string) => void;
 }
 
-const DataSourceCard = ({ bucket, onBucketChange, tableName, onTableNameChange }: DataSourceCardProps) => {
+const DataSourceCard = ({ bucket, onBucketChange, tableName, onTableNameChange, errors }: DataSourceCardProps) => {
   const randomAlias = () => {
     const adj = ADJS[Math.floor(Math.random() * ADJS.length)];
     const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
@@ -18,7 +20,12 @@ const DataSourceCard = ({ bucket, onBucketChange, tableName, onTableNameChange }
     <div className="card">
       <p className="label">Data Source</p>
       <label>Parquet endpoint</label>
-      <input value={bucket} onChange={(e) => onBucketChange(e.target.value)} />
+      <input
+        value={bucket}
+        onChange={(e) => onBucketChange(e.target.value)}
+        className={errors.bucket ? 'input-error' : ''}
+      />
+      <p className="input-hint">{errors.bucket ?? ''}</p>
       <label>Table alias</label>
       <div className="row">
         <input value={tableName} onChange={(e) => onTableNameChange(e.target.value)} />

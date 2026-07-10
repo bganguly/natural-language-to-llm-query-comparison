@@ -186,6 +186,16 @@ select option { background: #1c1c25; color: var(--text); }
 .hint { margin: 6px 0; color: var(--hint); font-size: 11px; }
 .wide { width: 100%; margin-bottom: 8px; }
 
+/* ── Inline field errors (matches phi-deidentification demo) ─────────────── */
+.input-error { border-color: var(--red) !important; box-shadow: 0 0 0 2px rgba(248,113,113,0.18) !important; }
+.input-hint  { min-height: 16px; margin: 3px 0 2px; color: var(--red); font-size: 11px; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60%  { transform: translateX(-4px); }
+  40%,80%  { transform: translateX(4px); }
+}
+.shake { animation: shake 0.35s ease; }
+
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
 .btn, .btn-go, .btn-sm, .btn-copy { border-radius: 6px; cursor: pointer; font-weight: 500; }
 
