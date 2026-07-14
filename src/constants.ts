@@ -23,7 +23,6 @@ export const MODELS: { anthropic: string[]; openai: string[]; google: string[] }
     'gemini-2.5-flash',
     'gemini-2.5-flash-lite',
     'gemini-2.0-flash',
-    'gemini-2.0-flash-lite-001',
   ],
 };
 
