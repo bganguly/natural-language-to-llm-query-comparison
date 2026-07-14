@@ -73,7 +73,7 @@ VERCEL_URL="https://natural-language-to-llm-query-comparison.vercel.app"
 
 if [[ -n "$VERCEL_URL" ]]; then
   LIVE_URL="${VERCEL_URL}/nl-to-sql/"
-  PORTFOLIO_DIR="$(cd "$REPO_DIR/../../.." && pwd)/portfolio"
+  PORTFOLIO_DIR="$(cd "$REPO_DIR/../.." && pwd)/portfolio"
   LIVE_URLS_FILE="$PORTFOLIO_DIR/live-urls.js"
 
   if [[ -f "$LIVE_URLS_FILE" ]]; then
