@@ -4,14 +4,19 @@ export const LEGACY_STORAGE_KEY = 'nlsql_v5';
 export const ADJS = ['amber', 'brisk', 'coral', 'dusty', 'ember', 'frost', 'gilded', 'hazy', 'ivory', 'jade'];
 export const NOUNS = ['table', 'frame', 'batch', 'slice', 'shard', 'view', 'store'];
 
-export const MODELS: { anthropic: string[]; openai: string[] } = {
+export const MODELS: { anthropic: string[]; openai: string[]; google: string[] } = {
   anthropic: [
+    'claude-opus-4-8',
     'claude-opus-4-7',
+    'claude-sonnet-5',
     'claude-sonnet-4-6',
     'claude-haiku-4-5-20251001',
   ],
-  openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
+  openai: ['gpt-4o', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-4o-mini', 'gpt-4-turbo'],
+  google: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash'],
 };
+
+export type KeyMode = 'predefined' | 'own-key';
 
 export const DIALECTS: string[] = ['DuckDB', 'Presto/Athena', 'Spark SQL', 'BigQuery'];
 
