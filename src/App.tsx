@@ -9,6 +9,7 @@ import SampleQueries from './components/SampleQueries.tsx';
 import SchemaColumnsCard from './components/SchemaColumnsCard.tsx';
 import SqlOutputCard from './components/SqlOutputCard.tsx';
 import TopBar from './components/TopBar.tsx';
+import BackToPortfolio from './components/BackToPortfolio.tsx';
 import {
   DEFAULT_BUCKET,
   DEFAULT_COLS,
@@ -20,9 +21,14 @@ import {
   nowClock,
   parquetTypeToSql,
 } from './constants.ts';
+import type { KeyMode } from './constants.ts';
 import { useDuckDb } from './hooks/useDuckDb.ts';
 
-const providerFromModel = (model: string): string => (model.startsWith('gpt-') ? 'OpenAI' : 'Anthropic');
+const providerFromModel = (model: string): string => {
+  if (model.startsWith('gpt-')) return 'OpenAI';
+  if (model.startsWith('gemini-')) return 'Google';
+  return 'Anthropic';
+};
 
 // Replace a bare table-name reference with the full read_parquet(...) expression.
 // Handles: FROM alias, JOIN alias, FROM alias AS x, subquery aliases.
@@ -40,14 +46,17 @@ const App = () => {
   // ── Config state ──────────────────────────────────────────────────────────
   const [bucket, setBucket] = useState(DEFAULT_BUCKET);
   const [tableName, setTableName] = useState('h1b');
+  const [keyMode, setKeyMode] = useState<KeyMode>('predefined');
   const [anthropicKey, setAnthropicKey] = useState('');
   const [openAiKey, setOpenAiKey] = useState('');
-  const [model, setModel] = useState(MODELS.anthropic[0]);
+  const [googleKey, setGoogleKey] = useState('');
+  const [model, setModel] = useState('gpt-4-turbo');
   const [dialect, setDialect] = useState('DuckDB');
   const [cols, setCols] = useState(DEFAULT_COLS);
+  const [suspended, setSuspended] = useState(false);
 
   // ── Query / output state ──────────────────────────────────────────────────
-  const [nlQuery, setNlQuery] = useState('');
+  const [nlQuery, setNlQuery] = useState('top employers by count');
   const [activeQuery, setActiveQuery] = useState('');
   const [sql, setSql] = useState('Translated SQL will appear here.');
   const [sqlIsPlaceholder, setSqlIsPlaceholder] = useState(true);
@@ -70,7 +79,11 @@ const App = () => {
 
   const hydratedRef = useRef(false);
   const providerName = useMemo(() => providerFromModel(model), [model]);
-  const activeApiKey = providerName === 'OpenAI' ? openAiKey.trim() : anthropicKey.trim();
+  const activeApiKey = useMemo(() => {
+    if (providerName === 'OpenAI') return openAiKey.trim();
+    if (providerName === 'Google') return googleKey.trim();
+    return anthropicKey.trim();
+  }, [providerName, openAiKey, googleKey, anthropicKey]);
 
   const addLog = (message: string, level = 'n') => {
     setLogs((prev) => [...prev, { id: `${Date.now()}-${prev.length}`, ts: nowClock(), message, level }]);
@@ -137,8 +150,8 @@ const App = () => {
   // ── Translate (NL → SQL) ──────────────────────────────────────────────────
   const translate = async () => {
     if (!nlQuery.trim()) { addLog('No query entered.', 'wn'); return; }
-    if (!activeApiKey) {
-      const field = providerName === 'OpenAI' ? 'openAiKey' : 'anthropicKey';
+    if (keyMode === 'own-key' && !activeApiKey) {
+      const field = providerName === 'OpenAI' ? 'openAiKey' : providerName === 'Google' ? 'googleKey' : 'anthropicKey';
       addLog(`No API key for ${providerName}.`, 'er');
       showFieldError(field, `${providerName} API key is required.`);
       return;
@@ -176,7 +189,7 @@ const App = () => {
       addLog(`API › POST ${providerName} (${model})...`);
       const t1 = Date.now();
       const { sql: parsedSql, explanation: parsedExplanation } = await callProvider({
-        model, apiKey: activeApiKey, systemPrompt, nlQuery: nlQuery.trim(), providerName,
+        model, apiKey: activeApiKey, systemPrompt, nlQuery: nlQuery.trim(), providerName, keyMode,
       });
       addLog(`API › response received in ${((Date.now() - t1) / 1000).toFixed(1)}s`, 'ok');
       if (!parsedSql) throw new Error('Model returned empty SQL.');
@@ -197,9 +210,16 @@ const App = () => {
       await runQuery(fixedSql);
       setStatusText('SQL ready'); setStatusClass('b-ok');
     } catch (error) {
-      setSql(`Error: ${(error as Error).message}`); setSqlIsPlaceholder(true);
-      setStatusText('error'); setStatusClass('b-err');
-      addLog(`Exception: ${(error as Error).message}`, 'er');
+      const msg = (error as Error).message;
+      if (msg === '__suspended__') {
+        setSuspended(true);
+        setSql('Service suspended.'); setSqlIsPlaceholder(true);
+        setStatusText('suspended'); setStatusClass('b-err');
+      } else {
+        setSql(`Error: ${msg}`); setSqlIsPlaceholder(true);
+        setStatusText('error'); setStatusClass('b-err');
+        addLog(`Exception: ${msg}`, 'er');
+      }
     }
   };
 
@@ -211,8 +231,10 @@ const App = () => {
         const s = JSON.parse(v6Raw);
         if (s.bucket) setBucket(s.bucket);
         if (s.tableName) setTableName(s.tableName);
+        if (s.keyMode) setKeyMode(s.keyMode);
         if (s.anthropicKey) setAnthropicKey(s.anthropicKey);
         if (s.openAiKey) setOpenAiKey(s.openAiKey);
+        if (s.googleKey) setGoogleKey(s.googleKey);
         if (s.dialect) setDialect(s.dialect);
         if (s.model) setModel(s.model);
         if (s.nlQuery) setNlQuery(s.nlQuery);
@@ -241,14 +263,21 @@ const App = () => {
   useEffect(() => {
     if (!hydratedRef.current) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ bucket, tableName, anthropicKey, openAiKey, dialect, model, nlQuery, cols }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ bucket, tableName, keyMode, anthropicKey, openAiKey, googleKey, dialect, model, nlQuery, cols }));
     } catch { /* ignore */ }
-  }, [bucket, tableName, anthropicKey, openAiKey, dialect, model, nlQuery, cols]);
+  }, [bucket, tableName, keyMode, anthropicKey, openAiKey, googleKey, dialect, model, nlQuery, cols]);
 
   // ── Layout ────────────────────────────────────────────────────────────────
   return (
     <main className="app">
+      <BackToPortfolio />
       <TopBar duckReady={duckReady} />
+      {suspended && (
+        <div style={{ background: 'var(--c-err, #c0392b)', color: '#fff', padding: '0.75rem 1.25rem', textAlign: 'center', fontSize: '0.9rem' }}>
+          Service temporarily suspended. To request access email{' '}
+          <a href="mailto:gangulybikramjit@gmail.com" style={{ color: '#fff', fontWeight: 600 }}>gangulybikramjit@gmail.com</a>.
+        </div>
+      )}
 
       <div className="layout">
         {/* Left column: config panels */}
@@ -259,8 +288,10 @@ const App = () => {
             errors={fieldErrors} onClearError={clearFieldError}
           />
           <ApiConfigCard
+            keyMode={keyMode} onKeyModeChange={(m) => { setKeyMode(m); setSuspended(false); }}
             anthropicKey={anthropicKey} onAnthropicKeyChange={(v) => { setAnthropicKey(v); clearFieldError('anthropicKey'); }}
             openAiKey={openAiKey} onOpenAiKeyChange={(v) => { setOpenAiKey(v); clearFieldError('openAiKey'); }}
+            googleKey={googleKey} onGoogleKeyChange={(v) => { setGoogleKey(v); clearFieldError('googleKey'); }}
             model={model} onModelChange={setModel}
             dialect={dialect} onDialectChange={setDialect}
             providerName={providerName}
