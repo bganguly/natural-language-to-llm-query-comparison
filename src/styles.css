@@ -240,8 +240,13 @@ select option { background: #1c1c25; color: var(--text); }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(109,40,217,0.75);
+  gap: 6px;
+  background: rgba(109,40,217,0.92);
   border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 .btn-go-ring {
   width: 13px;
