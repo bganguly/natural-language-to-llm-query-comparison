@@ -44,7 +44,7 @@ const fixTableRef = (sqlStr: string, alias: string, bucketUrl: string): string =
 
 const App = () => {
   // ── Config state ──────────────────────────────────────────────────────────
-  const [bucket, setBucket] = useState(DEFAULT_BUCKET);
+  const bucket = DEFAULT_BUCKET;
   const [tableName, setTableName] = useState('h1b');
   const [keyMode, setKeyMode] = useState<KeyMode>('predefined');
   const [anthropicKey, setAnthropicKey] = useState('');
@@ -130,7 +130,7 @@ const App = () => {
 
   // ── Schema sniff ──────────────────────────────────────────────────────────
   const sniffSchema = async () => {
-    if (!bucket.trim()) { showFieldError('bucket', 'Parquet endpoint is required.'); return; }
+    if (!bucket.trim()) { addLog('Parquet endpoint not configured.', 'wn'); return; }
     try {
       addLog('Sniffing schema ...');
       const conn = await getConnection();
@@ -229,7 +229,6 @@ const App = () => {
       const v6Raw = localStorage.getItem(STORAGE_KEY);
       if (v6Raw) {
         const s = JSON.parse(v6Raw);
-        if (s.bucket) setBucket(s.bucket);
         if (s.tableName) setTableName(s.tableName);
         if (s.keyMode) setKeyMode(s.keyMode);
         if (s.anthropicKey) setAnthropicKey(s.anthropicKey);
@@ -243,7 +242,6 @@ const App = () => {
         const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
         if (legacyRaw) {
           const s = JSON.parse(legacyRaw);
-          if (s.bucket) setBucket(s.bucket);
           if (s.tablename) setTableName(s.tablename);
           if (s.model) setModel(s.model);
           if (s.dialect) setDialect(s.dialect);
@@ -263,9 +261,9 @@ const App = () => {
   useEffect(() => {
     if (!hydratedRef.current) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ bucket, tableName, keyMode, anthropicKey, openAiKey, googleKey, dialect, model, nlQuery, cols }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ tableName, keyMode, anthropicKey, openAiKey, googleKey, dialect, model, nlQuery, cols }));
     } catch { /* ignore */ }
-  }, [bucket, tableName, keyMode, anthropicKey, openAiKey, googleKey, dialect, model, nlQuery, cols]);
+  }, [tableName, keyMode, anthropicKey, openAiKey, googleKey, dialect, model, nlQuery, cols]);
 
   // ── Layout ────────────────────────────────────────────────────────────────
   return (
@@ -282,9 +280,7 @@ const App = () => {
         {/* Left column: config panels */}
         <div>
           <DataSourceCard
-            bucket={bucket} onBucketChange={(v) => { setBucket(v); clearFieldError('bucket'); }}
             tableName={tableName} onTableNameChange={setTableName}
-            errors={fieldErrors} onClearError={clearFieldError}
           />
           <ApiConfigCard
             keyMode={keyMode} onKeyModeChange={(m) => { setKeyMode(m); setSuspended(false); }}
