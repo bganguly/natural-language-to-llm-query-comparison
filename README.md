@@ -5,7 +5,7 @@ and explanation from any of three LLM providers, then run it instantly against a
 **DuckDB-WASM** — no backend, no uploads, no server. Provider and model are switchable at any time;
 the same question to different models makes quality differences immediately visible.
 
-> **Dataset source:** The default H1B LCA Parquet file is built and maintained in [`parse-lca-files-to-parquet`](../parse-lca-files-to-parquet/). That repo downloads the official DOL quarterly XLSX disclosures (FY2020 Q1 – FY2026 Q2), normalises them, and publishes combined and year-partitioned Parquet to S3. See its [README](../parse-lca-files-to-parquet/README.md#source-xlsx-by-quarter) for the per-quarter DOL source URLs and S3 endpoint pattern.
+> **Dataset source:** The default H1B LCA Parquet file is built and maintained in [`parse-lca-files-to-parquet`](../parse-lca-files-to-parquet/). That repo downloads the official DOL quarterly XLSX disclosures (FY2020 Q1 – FY2026 Q3), normalises them, and publishes combined and year-partitioned Parquet to S3. See its [README](../parse-lca-files-to-parquet/README.md#source-xlsx-by-quarter) for the per-quarter DOL source URLs and S3 endpoint pattern.
 
 ---
 
