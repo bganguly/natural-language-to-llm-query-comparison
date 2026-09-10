@@ -2,9 +2,10 @@ interface NlQueryBarProps {
   value: string;
   onChange: (value: string) => void;
   onTranslate: () => void;
+  loading?: boolean;
 }
 
-const NlQueryBar = ({ value, onChange, onTranslate }: NlQueryBarProps) => {
+const NlQueryBar = ({ value, onChange, onTranslate, loading }: NlQueryBarProps) => {
   return (
     <div className="card">
       <p className="label">Natural Language Query</p>
@@ -17,7 +18,12 @@ const NlQueryBar = ({ value, onChange, onTranslate }: NlQueryBarProps) => {
           rows={2}
           style={{ resize: 'vertical', whiteSpace: 'pre-wrap', overflowWrap: 'break-word', flex: 1, width: 0 }}
         />
-        <button className="btn-go" onClick={onTranslate}>
+        <button className="btn-go" onClick={onTranslate} disabled={loading} style={{ position: 'relative' }}>
+          {loading && (
+            <span className="btn-go-overlay">
+              <span className="btn-go-ring" />
+            </span>
+          )}
           Translate + Run
         </button>
       </div>

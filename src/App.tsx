@@ -310,7 +310,7 @@ const App = () => {
 
         {/* Right column: query input + activity log + SQL output + results */}
         <div>
-          <NlQueryBar value={nlQuery} onChange={(v) => { setNlQuery(v); if (activeQuery && !v.startsWith(activeQuery)) setActiveQuery(''); }} onTranslate={translate} />
+          <NlQueryBar value={nlQuery} onChange={(v) => { setNlQuery(v); if (activeQuery && !v.startsWith(activeQuery)) setActiveQuery(''); }} onTranslate={translate} loading={statusClass === 'b-spin'} />
           <LogPanel logs={logs} open={logOpen} onToggle={() => setLogOpen((s) => !s)} />
           <SqlOutputCard
             statusClass={statusClass} statusText={statusText}
