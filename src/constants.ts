@@ -134,7 +134,7 @@ export const NOTES: Note[] = [
 export const SQL_TYPES: string[] = ['TEXT', 'INTEGER', 'DOUBLE', 'DATE', 'BOOLEAN', 'TIMESTAMP'];
 
 export const DEFAULT_BUCKET =
-  'https://h1b-nlq-parquet-577479071532-20260511.s3.us-east-1.amazonaws.com/data/parquet/dol_lca_h1b_fy2020_q1_to_fy2026_q1.parquet?v=full_multi_fiscal_noempty_countrynull_20260512';
+  'https://h1b-nlq-parquet-577479071532-20260511.s3.us-east-1.amazonaws.com/data/parquet/dol_lca_h1b_combined.parquet';
 
 export const parquetTypeToSql = (rawType: string): string => {
   const raw = String(rawType || '').toUpperCase();
