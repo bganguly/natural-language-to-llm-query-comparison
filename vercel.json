@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "alias": ["natural-language-to-llm-query-comparison.vercel.app"],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/nl-to-sql/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/nl-to-sql/(.*)", "destination": "/index.html" }
+  ]
+}
